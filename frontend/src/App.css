@@ -1,0 +1,41 @@
+/* src/App.css atau src/index.css */
+
+/* === Tailwind Directives Wajib (harus di paling atas) === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset & global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Custom utilities & animations di layer utilities */
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .motion-safe\:animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+}
+
+/* Kalau ada custom class lain, taruh di sini atau di @layer components */

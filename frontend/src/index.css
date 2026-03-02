@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* KALREN Brand Colors - Premium Streetwear Palette */
+        /* Dark Navy - Primary brand color for headers and hero sections */
+        --navy: 215 40% 8%;
+        --navy-foreground: 0 0% 100%;
+        
+        /* Backgrounds */
+        --background: 0 0% 100%;
+        --foreground: 215 40% 8%;
+        
+        /* Soft Gray - Section backgrounds */
+        --section-bg: 210 17% 97%;
+        
+        /* Card and UI Elements */
+        --card: 0 0% 100%;
+        --card-foreground: 215 40% 8%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 215 40% 8%;
+        
+        /* Primary - Dark Navy */
+        --primary: 215 40% 8%;
+        --primary-foreground: 0 0% 100%;
+        
+        /* Secondary - Subtle Gray */
+        --secondary: 210 17% 97%;
+        --secondary-foreground: 215 40% 8%;
+        
+        /* Muted - For subtle text and backgrounds */
+        --muted: 210 17% 95%;
+        --muted-foreground: 215 15% 45%;
+        
+        /* Accent - Slightly darker gray for emphasis */
+        --accent: 210 17% 95%;
+        --accent-foreground: 215 40% 8%;
+        
+        /* Borders and Inputs */
+        --border: 210 17% 90%;
+        --input: 210 17% 90%;
+        --ring: 215 40% 8%;
+        
+        /* Destructive (kept for system use) */
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        
+        /* Custom Design Tokens for KALREN */
+        /* Shadows - Soft and minimal */
+        --shadow-soft: 0 4px 24px -2px hsl(215 40% 8% / 0.08);
+        --shadow-lift: 0 8px 32px -4px hsl(215 40% 8% / 0.12);
+        --shadow-elegant: 0 12px 40px -8px hsl(215 40% 8% / 0.16);
+        
+        /* Transitions - Smooth and elegant */
+        --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-lift: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        
+        /* Border Radius - Large, premium feel */
+        --radius: 1rem;
+        --radius-lg: 1.5rem;
+        --radius-xl: 2rem;
+        --radius-2xl: 2.5rem;
+        --radius-3xl: 3rem;
+        
+        /* Spacing Scale - Generous whitespace */
+        --spacing-section: 6rem;
+        --spacing-section-lg: 8rem;
+        --spacing-section-xl: 12rem;
+    }
+    
+    .dark {
+        --background: 215 40% 8%;
+        --foreground: 0 0% 100%;
+        --card: 215 35% 12%;
+        --card-foreground: 0 0% 100%;
+        --popover: 215 35% 12%;
+        --popover-foreground: 0 0% 100%;
+        --primary: 0 0% 100%;
+        --primary-foreground: 215 40% 8%;
+        --secondary: 215 30% 15%;
+        --secondary-foreground: 0 0% 100%;
+        --muted: 215 30% 15%;
+        --muted-foreground: 210 10% 60%;
+        --accent: 215 30% 15%;
+        --accent-foreground: 0 0% 100%;
+        --border: 215 25% 20%;
+        --input: 215 25% 20%;
+        --ring: 0 0% 100%;
+    }
+}
+
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    
+    body {
+        @apply bg-background text-foreground;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Typography System - KALREN Premium Streetwear */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: hsl(var(--background));
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: hsl(var(--muted));
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--muted-foreground) / 0.5);
+    }
+}
+
+@layer utilities {
+    /* Fade-in animation */
+    .animate-fade-in {
+        animation: fadeIn var(--transition-smooth) ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Hover lift effect */
+    .hover-lift {
+        transition: transform var(--transition-lift), box-shadow var(--transition-smooth);
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-elegant);
+    }
+    
+    /* Image zoom on hover */
+    .hover-zoom {
+        transition: transform var(--transition-smooth);
+    }
+    
+    .hover-zoom:hover {
+        transform: scale(1.05);
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
