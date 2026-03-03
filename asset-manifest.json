@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/KALREN/static/css/main.39684967.css",
-    "main.js": "/KALREN/static/js/main.ac4e0249.js",
+    "main.js": "/KALREN/static/js/main.f10ca6bc.js",
     "static/media/Putih 3.png": "/KALREN/static/media/Putih 3.9163696a9e16ec599745.png",
     "static/media/marun 1.png": "/KALREN/static/media/marun 1.d1a865d688f48d67baaf.png",
     "static/media/Putih 2.png": "/KALREN/static/media/Putih 2.d669d375c8d2cb032d56.png",
@@ -44,10 +44,10 @@
     "static/media/shopee-logo.png": "/KALREN/static/media/shopee-logo.56348f65f5f9fbed01e6.png",
     "index.html": "/KALREN/index.html",
     "main.39684967.css.map": "/KALREN/static/css/main.39684967.css.map",
-    "main.ac4e0249.js.map": "/KALREN/static/js/main.ac4e0249.js.map"
+    "main.f10ca6bc.js.map": "/KALREN/static/js/main.f10ca6bc.js.map"
   },
   "entrypoints": [
     "static/css/main.39684967.css",
-    "static/js/main.ac4e0249.js"
+    "static/js/main.f10ca6bc.js"
   ]
 }
