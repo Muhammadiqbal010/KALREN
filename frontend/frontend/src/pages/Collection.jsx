@@ -14,6 +14,7 @@ export const Collection = () => {
   ];
 
   // 🔥 AUTO FILTER DARI URL
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category');
 
