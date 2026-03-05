@@ -15,21 +15,21 @@ export const Collection = () => {
 
   // 🔥 AUTO FILTER DARI URL
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const categoryFromUrl = searchParams.get('category');
+      useEffect(() => {
+      const categoryFromUrl = searchParams.get('category');
 
-    if (categoryFromUrl) {
-      const normalized = categoryFromUrl.toUpperCase();
+      if (categoryFromUrl) {
+        const normalized = categoryFromUrl.toUpperCase();
 
-      if (categories.includes(normalized)) {
-        setSelectedCategory(normalized);
+        if (categories.includes(normalized)) {
+          setSelectedCategory(normalized);
+        } else {
+          setSelectedCategory('SEMUA');
+        }
       } else {
         setSelectedCategory('SEMUA');
       }
-    } else {
-      setSelectedCategory('SEMUA');
-    }
-  }, [searchParams, categories]);
+    }, [searchParams, categories]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
