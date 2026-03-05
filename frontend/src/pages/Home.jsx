@@ -4,17 +4,18 @@ import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
 import churchTexture from '@/assets/textures/church.png';
 
+
 // ===== CORE IMAGES =====
-import hitam from '@/assets/hitam/Hitam.png';
-import navy from '@/assets/navy/Navy.png';
-import marun from '@/assets/maroon/Marun.png';
-import putih from '@/assets/putih/Putih.png';
+import hitam from '@/assets/card/Black.png';
+import navy from '@/assets/card/Navy.png';
+import marun from '@/assets/card/Maroon.png';
+import putih from '@/assets/card/Putih.png';
 
 // ===== EDGE IMAGES =====
-import albert from '@/assets/albert/albert.png';
-import street from '@/assets/street/street.png';
-import bali from '@/assets/bali/bali.png';
-import daruma from '@/assets/daruma/daruma.png';
+import albert from '@/assets/card/Albert.png';
+import street from '@/assets/card/Street.png';
+import bali from '@/assets/card/Bali.png';
+import daruma from '@/assets/card/Daruma.png';
 
 export const Home = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -33,10 +34,10 @@ export const Home = () => {
   ];
 
   const edgeItems = [
-    { name: 'Albert', image: albert },
-    { name: 'Street', image: street },
-    { name: 'Bali', image: bali },
-    { name: 'Daruma', image: daruma },
+    { name: 'Einstein E = MC²', image: albert },
+    { name: 'Street Crown', image: street },
+    { name: 'Island Guardian', image: bali },
+    { name: 'Fortune Daruma', image: daruma },
   ];
 
   const [activeCore, setActiveCore] = useState(coreItems[0]);
