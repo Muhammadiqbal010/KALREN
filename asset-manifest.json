@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/KALREN/static/css/main.39684967.css",
-    "main.js": "/KALREN/static/js/main.f10ca6bc.js",
+    "main.js": "/KALREN/static/js/main.7b19c0e4.js",
     "static/media/Putih 3.png": "/KALREN/static/media/Putih 3.9163696a9e16ec599745.png",
     "static/media/marun 1.png": "/KALREN/static/media/marun 1.d1a865d688f48d67baaf.png",
     "static/media/Putih 2.png": "/KALREN/static/media/Putih 2.d669d375c8d2cb032d56.png",
@@ -16,8 +16,8 @@
     "static/media/Navy 3.png": "/KALREN/static/media/Navy 3.026efa81893f329a563a.png",
     "static/media/Hitam.png": "/KALREN/static/media/Hitam.c3ad8fbba708bf5b7a3b.png",
     "static/media/Marun.png": "/KALREN/static/media/Marun.da3545b6db52a929b4b2.png",
-    "static/media/Putih.png": "/KALREN/static/media/Putih.498c6f9d478c540e3c51.png",
-    "static/media/Navy.png": "/KALREN/static/media/Navy.39c0cb0c1b62dfd5650a.png",
+    "static/media/Putih.png": "/KALREN/static/media/Putih.f6142bc5efe3b66c2052.png",
+    "static/media/Navy.png": "/KALREN/static/media/Navy.c838808e715a779266b5.png",
     "static/media/daruma3.png": "/KALREN/static/media/daruma3.cb59b6445c6c21ccf7bc.png",
     "static/media/bali3.png": "/KALREN/static/media/bali3.93bda18359ea4e2d0c75.png",
     "static/media/albert4.png": "/KALREN/static/media/albert4.230f047343cc6c81a5ed.png",
@@ -38,16 +38,22 @@
     "static/media/street.png": "/KALREN/static/media/street.d8739b7daf1829d12b55.png",
     "static/media/daruma.png": "/KALREN/static/media/daruma.dd03ed0b7b2a304785b0.png",
     "static/media/bali.png": "/KALREN/static/media/bali.5eb1d6e05647c18dc4bf.png",
+    "static/media/Albert.png": "/KALREN/static/media/Albert.8f395899a44d666e9f7b.png",
+    "static/media/Street.png": "/KALREN/static/media/Street.903cc916c7f321a78d1f.png",
+    "static/media/Bali.png": "/KALREN/static/media/Bali.0d958066609c3dcdd980.png",
+    "static/media/Black.png": "/KALREN/static/media/Black.2fdfa8018577334e93c5.png",
+    "static/media/Daruma.png": "/KALREN/static/media/Daruma.03309cc7934804e4b4e2.png",
+    "static/media/Maroon.png": "/KALREN/static/media/Maroon.9bb9b3f6d6a3d3fe2524.png",
     "static/media/instagram.png": "/KALREN/static/media/instagram.9ccc47642c49c644f35a.png",
     "static/media/tiktok.png": "/KALREN/static/media/tiktok.a01f8e54db4eda4ade52.png",
     "static/media/tiktok-logo.png": "/KALREN/static/media/tiktok-logo.255b1145971213618e23.png",
     "static/media/shopee-logo.png": "/KALREN/static/media/shopee-logo.56348f65f5f9fbed01e6.png",
     "index.html": "/KALREN/index.html",
     "main.39684967.css.map": "/KALREN/static/css/main.39684967.css.map",
-    "main.f10ca6bc.js.map": "/KALREN/static/js/main.f10ca6bc.js.map"
+    "main.7b19c0e4.js.map": "/KALREN/static/js/main.7b19c0e4.js.map"
   },
   "entrypoints": [
     "static/css/main.39684967.css",
-    "static/js/main.f10ca6bc.js"
+    "static/js/main.7b19c0e4.js"
   ]
 }
