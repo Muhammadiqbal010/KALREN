@@ -28,7 +28,7 @@ export const Collection = () => {
     } else {
       setSelectedCategory('SEMUA');
     }
-  }, [searchParams]);
+  }, [searchParams, categories]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
