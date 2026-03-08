@@ -4,32 +4,34 @@ import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
 import { products } from '@/data/products';
 
+// ✅ PINDAHKAN KE SINI (DI LUAR KOMPONEN)
+// Supaya referensinya tetap sama dan tidak memicu useEffect berulang kali
+const categoriesList = [
+  'SEMUA',
+  ...new Set(products.map(p => p.category.toUpperCase()))
+];
+
 export const Collection = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('SEMUA');
 
-  const categories = [
-    'SEMUA',
-    ...new Set(products.map(p => p.category.toUpperCase()))
-  ];
-
   // 🔥 AUTO FILTER DARI URL
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-      useEffect(() => {
-      const categoryFromUrl = searchParams.get('category');
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
 
-      if (categoryFromUrl) {
-        const normalized = categoryFromUrl.toUpperCase();
+    if (categoryFromUrl) {
+      const normalized = categoryFromUrl.toUpperCase();
 
-        if (categories.includes(normalized)) {
-          setSelectedCategory(normalized);
-        } else {
-          setSelectedCategory('SEMUA');
-        }
+      // Gunakan categoriesList yang di luar tadi
+      if (categoriesList.includes(normalized)) {
+        setSelectedCategory(normalized);
       } else {
         setSelectedCategory('SEMUA');
       }
-    }, [searchParams, categories]);
+    } else {
+      setSelectedCategory('SEMUA');
+    }
+  }, [searchParams]); // ✅ Hapus 'categories' dari dependency karena sudah di luar
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
@@ -59,7 +61,7 @@ export const Collection = () => {
       {/* FILTER */}
       <section className="py-12 border-b border-gray-200">
         <div className="flex justify-center gap-10 uppercase tracking-widest">
-          {categories.map((category) => (
+          {categoriesList.map((category) => (
             <button
               key={category}
               onClick={() => handleCategoryChange(category)}
