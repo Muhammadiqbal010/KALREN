@@ -1,5 +1,5 @@
 {
-  "homepage": "https://muhammadiqbal010.github.io/KALREN",
+  "homepage": ".",
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
@@ -57,9 +57,10 @@
     "zod": "^3.24.4"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
