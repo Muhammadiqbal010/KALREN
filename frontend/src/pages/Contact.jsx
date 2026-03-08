@@ -57,8 +57,10 @@ export const Contact = () => {
 
         <div className="relative max-w-6xl mx-auto px-6 md:px-12 lg:px-16 text-center z-10">
           <div
-            className={`transition-all duration-[2400ms] ease-out transform ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+            className={`transition-[opacity,transform] duration-[2400ms] ease-out ${
+              isVisible 
+                ? "opacity-100 translate-y-0" 
+                : "opacity-0 translate-y-16"
             }`}
           >
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.98] md:leading-[1.02] tracking-[-0.04em] uppercase text-white">

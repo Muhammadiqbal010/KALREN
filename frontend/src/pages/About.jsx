@@ -61,8 +61,10 @@ export const About = () => {
 
         <div className="relative max-w-6xl mx-auto px-6 md:px-12 lg:px-16 text-center z-10 w-full">
           <div
-            className={`transition-all duration-[2200ms] ease-out transform ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            className={`transition-[opacity,transform] duration-[2200ms] ease-out ${
+              isVisible 
+                ? "opacity-100 translate-y-0" 
+                : "opacity-0 translate-y-12"
             }`}
           >
             <h1 className="
