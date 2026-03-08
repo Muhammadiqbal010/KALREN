@@ -75,7 +75,7 @@ export const Home = () => {
 
         <div className="relative max-w-6xl mx-auto px-6 text-center z-10">
           <div
-            className={`transition-all duration-[2000ms] ease-out transform ${
+            className={`transition-[opacity,transform] duration-[2000ms] ease-out ${
               isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-12"
