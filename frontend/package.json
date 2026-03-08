@@ -1,5 +1,5 @@
 {
-  "homepage": ".",
+  "homepage": "https://muhammadiqbal010.github.io/KALREN",
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
@@ -57,10 +57,9 @@
     "zod": "^3.24.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
@@ -78,6 +77,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@craco/craco": "^7.1.0",
     "@eslint/js": "9.23.0",
     "autoprefixer": "^10.4.20",
     "eslint": "9.23.0",
