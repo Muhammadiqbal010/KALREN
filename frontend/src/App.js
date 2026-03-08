@@ -9,7 +9,7 @@ import Contact from '@/pages/Contact';
 function App() {
   return (
     <div className="App">
-  <BrowserRouter basename="/KALREN">
+  <BrowserRouter>
     <Routes>
       <Route index element={<Home />} />
       <Route path="about" element={<About />} />
