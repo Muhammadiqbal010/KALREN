@@ -4,24 +4,27 @@
 
 // ===== CORE =====
 import hitam from '@/assets/cover/HITAM.png';
-import hitam1 from '@/assets/hitam/Hitam 1.png';
-import hitam2 from '@/assets/hitam/Hitam 2.png';
-import hitam3 from '@/assets/hitam/Hitam 3.png';
+import hitam1 from '@/assets/hitam/hitam1.png';
+import hitam2 from '@/assets/hitam/hitam2.png';
+import hitam3 from '@/assets/hitam/hitam3.png';
+import hitam4 from '@/assets/hitam/hitam4.png';
 
 import navy from '@/assets/cover/NAVY.png';
-import navy1 from '@/assets/navy/Navy 1.png';
-import navy2 from '@/assets/navy/Navy 2.png';
-import navy3 from '@/assets/navy/Navy 3.png';
+import navy1 from '@/assets/navy/navy1.png';
+import navy2 from '@/assets/navy/navy2.png';
+import navy3 from '@/assets/navy/navy3.png';
 
 import marun from '@/assets/cover/MAROON.png';
-import marun1 from '@/assets/maroon/marun 1.png';
-import marun2 from '@/assets/maroon/marun 2.png';
-import marun3 from '@/assets/maroon/marun 3.png';
+import marun1 from '@/assets/maroon/maron1.png';
+import marun2 from '@/assets/maroon/maron2.png';
+import marun3 from '@/assets/maroon/maron3.png';
+import marun4 from '@/assets/maroon/maron4.png';
 
 import putih from '@/assets/cover/PUTIH.png';
-import putih1 from '@/assets/putih/Putih 1.png';
-import putih2 from '@/assets/putih/Putih 2.png';
-import putih3 from '@/assets/putih/Putih 3.png';
+import putih1 from '@/assets/putih/putih1.png';
+import putih2 from '@/assets/putih/putih2.png';
+import putih3 from '@/assets/putih/putih3.png';
+import putih4 from '@/assets/putih/putih4.png';
 
 // ===== EDGE =====
 import albert from '@/assets/cover/ALBERT.png';
@@ -87,7 +90,7 @@ Bukan sekadar warna, melainkan simbol otoritas dan kemudahan dalam memadupadanka
 Satu kaos untuk segala situasi—dari hangout santai hingga layer untuk tampilan formal.
 Hitam tidak akan pernah salah.
     `,
-    images: [hitam, hitam1, hitam2, hitam3],
+    images: [hitam, hitam1, hitam2, hitam3, hitam4],
     color: 'Hitam',
     links: {
       shopee: 'https://id.shp.ee/YDseN2d',
@@ -110,7 +113,7 @@ Warna ini membawa nuansa yang tenang namun menyimpan kekuatan besar. Dibuat deng
 
 Elegan, cerdas, dan selalu bisa diandalkan dalam setiap langkahmu.
     `,
-    images: [navy, navy1, navy2, navy3],
+    images: [navy, navy1, navy2, navy3, navy4],
     color: 'Navy',
     links: {
       shopee: 'https://id.shp.ee/LAi4GmQ',
@@ -133,7 +136,7 @@ Dipilih khusus untuk kamu yang ingin mencuri perhatian secara halus. Tekstur Cot
 
 Bukan hanya sekadar kaos polos, ini adalah pernyataan bahwa kamu berani tampil beda.
     `,
-    images: [marun, marun1, marun2, marun3],
+    images: [marun, marun1, marun2, marun3, marun4],
     color: 'Maroon',
     links: {
       shopee: 'https://id.shp.ee/Hrmjbtv',
@@ -156,7 +159,7 @@ Ia mencerminkan kejujuran dan kesederhanaan yang sempurna. Dengan ketebalan 24s 
 
 Tetap relevan di masa lalu, masa kini, hingga masa depan.
     `,
-    images: [putih, putih1, putih2, putih3],
+    images: [putih, putih1, putih2, putih3, putih4],
     color: 'White',
     links: {
       shopee: 'https://id.shp.ee/muuE6cR',
