@@ -12,7 +12,18 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    // 1. Coba scroll window utama
     window.scrollTo(0, 0);
+
+    // 2. Paksa scroll elemen body dan html (buat jaga-jaga)
+    document.documentElement.scrollTo(0, 0);
+    document.body.scrollTo(0, 0);
+
+    // 3. Cari element dengan class .App atau container utama (KALREN biasanya pakai ini)
+    const appContainer = document.querySelector('.App');
+    if (appContainer) {
+      appContainer.scrollTo(0, 0);
+    }
   }, [pathname]);
 
   return null;
