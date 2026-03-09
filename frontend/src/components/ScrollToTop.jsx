@@ -1,14 +1,13 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const ScrollToTop = () => {
+export const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]); // Setiap kali path/rute berubah, jalankan scroll ke atas
+    // Pakai behavior smooth biar gak kaku
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, [pathname]);
 
-  return null; // Komponen ini gak nampilin apa-apa di layar
+  return null;
 };
-
-export default ScrollToTop;

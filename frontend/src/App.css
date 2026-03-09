@@ -1,26 +1,57 @@
 /* src/App.css atau src/index.css */
 
-/* === Tailwind Directives Wajib (harus di paling atas) === */
+/* === Tailwind Directives Wajib === */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Reset & global styles */
-* {
+@layer base {
+  body {
+    font-family: 'DM Sans', sans-serif !important;
+    @apply bg-white text-navy antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'DM Sans', sans-serif !important;
+    /* DM Sans biasanya bagus kalau agak rapat (tight) */
+    @apply tracking-tight; 
+  }
+}
+
+/* Menghilangkan scrollbar horizontal secara paksa di seluruh web */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+/* Tambahan: Menghilangkan scrollbar visual tapi tetap bisa scroll (opsional) */
+::-webkit-scrollbar {
+  width: 8px; /* lebar scrollbar vertical */
 }
 
-.App {
-  min-height: 100vh;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Custom utilities & animations di layer utilities */
+  html {
+    scroll-behavior: smooth;
+  }
+
+/* Custom components untuk KALREN */
+@layer components {
+  .hover-lift {
+    @apply transition-transform duration-500 hover:-translate-y-2;
+  }
+
+  .shadow-soft {
+    box-shadow: 0 10px 30px -15px rgba(10, 25, 47, 0.1);
+  }
+}
+
+/* Custom utilities & animations */
 @layer utilities {
   @keyframes fadeIn {
     from {
@@ -33,9 +64,27 @@ html {
     }
   }
 
-  .motion-safe\:animate-fade-in {
+  .animate-fade-in {
     animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  /* Utilitas tambahan untuk tracking yang tadi kita bahas */
+  .tracking-luxury {
+    letter-spacing: 0.25em;
+  }
+
+  .tracking-tightest {
+    letter-spacing: -0.05em;
   }
 }
 
-/* Kalau ada custom class lain, taruh di sini atau di @layer components */
+/* Fix untuk Framer Motion layout shift jika diperlukan */
+.layout-root {
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

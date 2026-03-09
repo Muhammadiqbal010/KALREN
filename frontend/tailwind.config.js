@@ -56,7 +56,15 @@ module.exports = {
         ring: 'hsl(var(--ring))'
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
+        // PERBAIKAN: Definisi untuk tipografi brand KALREN
+        heading: ['"DM Sans"', 'sans-serif'], 
+  body: ['"DM Sans"', 'sans-serif'],
+  sans: ['"DM Sans"', 'sans-serif'],
+      },
+      letterSpacing: {
+        // PERBAIKAN: Spasi huruf untuk vibe luxury
+        luxury: '0.25em',
+        tightest: '-0.05em',
       },
       fontSize: {
         '7xl': '5rem',

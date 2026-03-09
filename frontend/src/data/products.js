@@ -56,19 +56,6 @@ import daruma4 from '@/assets/daruma/daruma4.png';
 
 const baseSizes = ['M', 'L', 'XL', 'XXL'];
 
-const coreStory = `
-Core Essential adalah fondasi dari setiap wardrobe modern. 
-Dirancang untuk kamu yang menghargai kualitas, kenyamanan, dan tampilan clean tanpa berlebihan.
-
-Menggunakan cotton combed 24s dengan keseimbangan ketebalan yang ideal —
-tidak terlalu tipis, tidak terlalu berat. Lembut di kulit, breathable,
-menyerap keringat dengan baik, dan tetap mempertahankan bentuk setelah
-pemakaian berulang.
-
-Ini bukan sekadar kaos basic.
-Ini adalah standar.
-`;
-
 // ================= PRODUCTS =================
 
 export const products = [
@@ -78,11 +65,13 @@ export const products = [
   {
     id: 1,
     name: 'Core Essential Tee — Black',
+    slug: 'core-essential-tee-black',
     category: 'core',
-    description:
-      'Clean. Bold. Timeless. Hitam adalah definisi kepercayaan diri yang tidak perlu banyak bicara.',
-    material: 'Cotton Combed 24s',
+    description: 'Clean. Bold. Timeless. Hitam adalah definisi kepercayaan diri yang tidak perlu banyak bicara.',
+    material: 'Cotton Combed 24s Premium',
     sizes: baseSizes,
+    metaTitle: 'Core Essential Tee Black - Kaos Polos Hitam Premium | KALREN',
+    metaDescription: 'Dapatkan Core Essential Tee Black dari KALREN. Bahan Cotton Combed 24s premium, nyaman, dan tidak mudah melar.',
     story: `
 Hitam adalah standar mutlak dalam berpakaian. 
 
@@ -102,11 +91,13 @@ Hitam tidak akan pernah salah.
   {
     id: 2,
     name: 'Core Essential Tee — Navy',
+    slug: 'core-essential-tee-navy',
     category: 'core',
-    description:
-      'Elegan dan refined. Navy menghadirkan kesan tenang namun tetap berkarakter.',
-    material: 'Cotton Combed 24s',
+    description: 'Elegan dan refined. Navy menghadirkan kesan tenang namun tetap berkarakter.',
+    material: 'Cotton Combed 24s Premium',
     sizes: baseSizes,
+    metaTitle: 'Core Essential Tee Navy - Koleksi Kaos Minimalis | KALREN',
+    metaDescription: 'Elegan dan tenang dengan Core Essential Tee Navy KALREN. Dibuat dari Cotton Combed 24s pilihan.',
     story: `
 Navy hadir untuk kamu yang mencari kedalaman karakter. 
 
@@ -125,11 +116,13 @@ Elegan, cerdas, dan selalu bisa diandalkan dalam setiap langkahmu.
   {
     id: 3,
     name: 'Core Essential Tee — Maroon',
+    slug: 'core-essential-tee-maroon',
     category: 'core',
-    description:
-      'Bold dengan sentuhan sophisticated. Warna untuk kamu yang berani tampil berbeda tanpa kehilangan kelas.',
-    material: 'Cotton Combed 24s',
+    description: 'Bold dengan sentuhan sophisticated. Warna untuk kamu yang berani tampil berbeda tanpa kehilangan kelas.',
+    material: 'Cotton Combed 24s Premium',
     sizes: baseSizes,
+    metaTitle: 'Core Essential Tee Maroon - Fashion Streetwear Lokal | KALREN',
+    metaDescription: 'Tampil berani dengan Core Essential Tee Maroon. Warna eksklusif dipadukan dengan material premium KALREN.',
     story: `
 Maroon adalah perpaduan antara gairah dan eksklusivitas. 
 
@@ -148,11 +141,13 @@ Bukan hanya sekadar kaos polos, ini adalah pernyataan bahwa kamu berani tampil b
   {
     id: 4,
     name: 'Core Essential Tee — White',
+    slug: 'core-essential-tee-white',
     category: 'core',
-    description:
-      'Versatile dan effortless. Putih yang bersih untuk tampilan minimal yang selalu relevan.',
-    material: 'Cotton Combed 24s',
+    description: 'Versatile dan effortless. Putih yang bersih untuk tampilan minimal yang selalu relevan.',
+    material: 'Cotton Combed 24s Premium',
     sizes: baseSizes,
+    metaTitle: 'Core Essential Tee White - Kaos Putih Tidak Menerawang | KALREN',
+    metaDescription: 'Kaos putih kualitas tinggi dari KALREN. Cotton Combed 24s yang pas, tidak menerawang, dan tetap dingin di kulit.',
     story: `
 Warna putih yang bersih adalah kanvas kosong untuk kreativitasmu. 
 
@@ -173,11 +168,13 @@ Tetap relevan di masa lalu, masa kini, hingga masa depan.
   {
     id: 5,
     name: 'Edge Tee — Albert',
+    slug: 'edge-tee-albert-edition',
     category: 'edge',
-    description:
-      'Representasi keberanian berpikir berbeda. Inspirasi dari sosok visioner yang mengubah cara dunia melihat realita.',
+    description: 'Representasi keberanian berpikir berbeda. Inspirasi dari sosok visioner yang mengubah cara dunia melihat realita.',
     material: 'Cotton Combed 24s + Premium DTF Print',
     sizes: baseSizes,
+    metaTitle: 'Edge Tee Albert Edition - Graphic Tee Streetwear | KALREN',
+    metaDescription: 'Beli Edge Tee Albert Edition. Kaos grafis dengan sablon DTF premium yang tajam dan tahan lama.',
     story: `
 Edge adalah ekspresi. 
 
@@ -185,9 +182,6 @@ Albert edition membawa pesan bahwa ide besar lahir dari keberanian untuk
 tidak selalu mengikuti arus. Dibuat dengan cotton combed 24s yang lembut
 dan breathable, dipadukan dengan sablon DTF premium dengan detail tajam,
 fleksibel, dan tahan lama.
-
-Dirancang untuk kamu yang tidak sekadar mengikuti tren —
-kamu menciptakannya.
     `,
     images: [albert, albert1, albert2, albert3, albert4],
     links: {
@@ -199,20 +193,19 @@ kamu menciptakannya.
   {
     id: 6,
     name: 'Edge Tee — Street Crown',
+    slug: 'edge-tee-street-crown',
     category: 'edge',
-    description:
-      'Energi urban yang mentah dan autentik. Street bukan gaya, ini attitude.',
+    description: 'Energi urban yang mentah dan autentik. Street bukan gaya, ini attitude.',
     material: 'Cotton Combed 24s + Premium DTF Print',
     sizes: baseSizes,
+    metaTitle: 'Edge Tee Street Crown - Urban Streetwear Style | KALREN',
+    metaDescription: 'Street Crown dari KALREN adalah simbol dominasi urban. Kualitas sablon premium dan bahan kaos nyaman.',
     story: `
 Street Crown adalah simbol dominasi dalam ruangmu sendiri.
 
 Menggabungkan kenyamanan premium dengan artwork berkarakter kuat,
 kaos ini dirancang untuk mereka yang hidup dengan ritme kota —
 cepat, berani, dan penuh determinasi.
-
-Detail sablon DTF premium memastikan visual tetap tajam dan tahan lama,
-bahkan dalam pemakaian intens.
     `,
     images: [street, street1, street2, street3, street4],
     links: {
@@ -224,20 +217,19 @@ bahkan dalam pemakaian intens.
   {
     id: 7,
     name: 'Edge Tee — Island Guardian',
+    slug: 'edge-tee-island-guardian',
     category: 'edge',
-    description:
-      'Perpaduan heritage dan street modern. Kuat, simbolik, dan penuh makna.',
+    description: 'Perpaduan heritage dan street modern. Kuat, simbolik, dan penuh makna.',
     material: 'Cotton Combed 24s + Premium DTF Print',
     sizes: baseSizes,
+    metaTitle: 'Edge Tee Island Guardian - Kaos Grafis Simbolik | KALREN',
+    metaDescription: 'Heritage bertemu modern streetwear dalam Edge Tee Island Guardian. Kaos statement dengan visual tegas.',
     story: `
 Island Guardian terinspirasi dari simbol perlindungan dan kekuatan.
 
 Menghadirkan visual yang tegas namun tetap refined,
 diproduksi dengan cotton combed 24s berkualitas dan DTF premium
 yang menjaga detail tetap hidup dalam setiap gerakan.
-
-Ini bukan hanya graphic tee.
-Ini statement.
     `,
     images: [bali, bali1, bali2, bali3, bali4],
     links: {
@@ -249,20 +241,19 @@ Ini statement.
   {
     id: 8,
     name: 'Edge Tee — Fortune Daruma',
+    slug: 'edge-tee-fortune-daruma',
     category: 'edge',
-    description:
-      'Simbol tekad, konsistensi, dan fokus pada tujuan. Dirancang untuk mereka yang tidak mudah menyerah.',
+    description: 'Simbol tekad, konsistensi, dan fokus pada tujuan. Dirancang untuk mereka yang tidak mudah menyerah.',
     material: 'Cotton Combed 24s + Premium DTF Print',
     sizes: baseSizes,
+    metaTitle: 'Edge Tee Fortune Daruma - Persistence Apparel | KALREN',
+    metaDescription: 'Tunjukkan tekadmu dengan Fortune Daruma KALREN. Kaos grafis bermakna dalam dengan kualitas material nomor satu.',
     story: `
 Fortune Daruma adalah representasi dari persistence.
 
 Setiap detail artwork membawa pesan tentang komitmen terhadap tujuan.
 Dipadukan dengan material premium dan sablon berkualitas tinggi,
 kaos ini nyaman dipakai sekaligus kuat secara visual.
-
-Untuk kamu yang percaya —
-proses tidak pernah mengkhianati hasil.
     `,
     images: [daruma, daruma1, daruma2, daruma3, daruma4],
     links: {

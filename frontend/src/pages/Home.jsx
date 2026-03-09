@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion} from 'framer-motion'; // Tambahkan useScroll & useTransform
+import Marquee from "react-fast-marquee"; //import { ReactLenis } from '@studio-freight/react-lenis'; // Tambahan Lenis
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
 import churchTexture from '@/assets/textures/church.png';
@@ -106,6 +108,88 @@ export const Home = () => {
         </div>
       </section>
 
+      <section className="w-full bg-white py-8 border-y border-navy/10 overflow-x-hidden">
+  <div className="w-full overflow-hidden">
+    <Marquee
+      speed={50}
+      gradient={false}
+      pauseOnHover={false}
+      style={{ overflow: "hidden" }}
+    >
+      <div className="flex items-center gap-16 px-12 whitespace-nowrap">
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          KALREN
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em]">
+          PRECISE CONTROL
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          QUALITY OVER EVERYTHING
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em]">
+          BUILT FOR YOUR HANGOUT
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          BORN IN INDONESIA
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em]">
+          EST. 2025
+        </span>
+
+        <span className="text-navy font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+      </div>
+    </Marquee>
+  </div>
+</section>
+
+      <section className="py-40 bg-white">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-8"
+          >
+            <h3 className="text-4xl md:text-6xl font-medium leading-tight tracking-tight">
+              Kami membangun dengan ritme yang <span className="italic font-bold">kami percaya.</span>
+            </h3>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              Bukan sekadar pakaian, KALREN adalah manifestasi dari kendali penuh atas gaya hidup lo. 
+              Dirancang untuk kenyamanan maksimal saat nongkrong.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ================= FEATURED COLLECTION ================= */}
       <section className="py-40 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
@@ -185,7 +269,44 @@ export const Home = () => {
         </div>
       </section>
 
-      <div className="bg-navy text-white/90">
+      {/* ================= CLOSING STATEMENT / CALL TO ACTION ================= */}
+      <section className="relative py-60 bg-navy overflow-hidden">
+        {/* Background Decorative Text */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+          <h2 className="text-[30vw] font-black text-white leading-none">KALREN</h2>
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+            viewport={{ once: true }}
+            className="space-y-12"
+          >
+            <h2 className="text-5xl md:text-7xl font-black text-white leading-tight uppercase tracking-tighter">
+              SIAP UNTUK <br />
+              <span className="italic text-slate-400">LEVEL UP</span> NONGKRONG LO?
+            </h2>
+            
+            <p className="text-xl text-slate-300 font-light tracking-[0.2em] uppercase max-w-2xl mx-auto leading-relaxed">
+              Jangan cuma jadi penonton. Ambil kendali gaya lo sekarang dengan koleksi terbaru kami.
+            </p>
+
+            <div className="pt-8">
+              <Link
+                to="/collection"
+                className="group relative inline-flex items-center px-12 py-6 bg-white text-navy text-xl font-bold tracking-[0.3em] uppercase rounded-full overflow-hidden transition-all duration-500 hover:scale-105"
+              >
+                <span className="relative z-10">Ambil Sekarang</span>
+                <div className="absolute inset-0 bg-slate-200 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="bg-navy border-t border-white/5">
         <Footer />
       </div>
     </div>

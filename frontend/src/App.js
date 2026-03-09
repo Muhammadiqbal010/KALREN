@@ -1,6 +1,9 @@
 import '@/App.css';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
+import { AnimatePresence } from 'framer-motion';
+import { ReactLenis } from '@studio-freight/react-lenis'; // <-- Import Lenis
 import Home from '@/pages/Home';
 import About from '@/pages/About';
 import Collection from '@/pages/Collection';
@@ -12,14 +15,10 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // 1. Coba scroll window utama
     window.scrollTo(0, 0);
-
-    // 2. Paksa scroll elemen body dan html (buat jaga-jaga)
     document.documentElement.scrollTo(0, 0);
     document.body.scrollTo(0, 0);
 
-    // 3. Cari element dengan class .App atau container utama (KALREN biasanya pakai ini)
     const appContainer = document.querySelector('.App');
     if (appContainer) {
       appContainer.scrollTo(0, 0);
@@ -32,18 +31,24 @@ const ScrollToTop = () => {
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        {/* Pasang di sini agar aktif di setiap perpindahan rute */}
-        <ScrollToTop /> 
-        
-        <Routes>
-          <Route index element={<Home />} />
-          <Route path="about" element={<About />} />
-          <Route path="collection" element={<Collection />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="contact" element={<Contact />} />
-        </Routes>
-      </BrowserRouter>
+      <HelmetProvider>
+        {/* --- Bungkus dengan Lenis untuk Smooth Scroll --- */}
+        <ReactLenis root options={{ lerp: 0.1, duration: 1.5, smoothWheel: true }}>
+          <BrowserRouter>
+            <ScrollToTop /> 
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route index element={<Home />} />
+                <Route path="about" element={<About />} />
+                <Route path="collection" element={<Collection />} />
+                {/* UBAH DI SINI: id -> slug */}
+                <Route path="product/:slug" element={<ProductDetail />} />
+                <Route path="contact" element={<Contact />} />
+              </Routes>
+            </AnimatePresence>
+          </BrowserRouter>
+        </ReactLenis>
+      </HelmetProvider>
     </div>
   );
 }

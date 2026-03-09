@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import logoKalren from '@/assets/logo/logokalren.png';
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,15 +26,25 @@ export const Navigation = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-smooth ${
-        isScrolled ? 'bg-navy/95 backdrop-blur-sm shadow-soft' : 'bg-navy'
-      }`}
-    >
+  className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    isScrolled 
+      ? 'bg-navy/90 backdrop-blur-xl border-b border-white/5 py-4 shadow-xl' 
+      : 'bg-navy py-6'
+  }`}
+>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+          {/* Logo Area */}
+          <Link to="/" className="flex items-center gap-3 group">
+            {/* 2. LOGO PNG */}
+            <img 
+              src={logoKalren} 
+              alt="KALREN Logo" 
+              className="h-7 md:h-8 w-auto object-contain"
+            />
+            
+            {/* Logo Text */}
+            <span className="text-3xl md:text-3xl font-bold text-white tracking-tighter uppercase leading-none">
               KALREN
             </span>
           </Link>
