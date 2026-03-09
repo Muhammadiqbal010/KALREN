@@ -15,10 +15,10 @@ import navy2 from '@/assets/navy/navy2.png';
 import navy3 from '@/assets/navy/navy3.png';
 
 import marun from '@/assets/cover/MAROON.png';
-import marun1 from '@/assets/maroon/maron1.png';
-import marun2 from '@/assets/maroon/maron2.png';
-import marun3 from '@/assets/maroon/maron3.png';
-import marun4 from '@/assets/maroon/maron4.png';
+import marun1 from '@/assets/maroon/maroon1.png';
+import marun2 from '@/assets/maroon/maroon2.png';
+import marun3 from '@/assets/maroon/maroon3.png';
+import marun4 from '@/assets/maroon/maroon4.png';
 
 import putih from '@/assets/cover/PUTIH.png';
 import putih1 from '@/assets/putih/putih1.png';
