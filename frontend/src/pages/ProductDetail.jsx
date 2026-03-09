@@ -10,11 +10,24 @@ export const ProductDetail = () => {
   const product = products.find(p => p.id === parseInt(id));
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // State untuk menyimpan produk rekomendasi yang sudah diacak
+  const [suggestedProducts, setSuggestedProducts] = useState([]);
 
   useEffect(() => {
     setImageLoaded(false);
     setSelectedImage(0);
-  }, [id]);
+
+    // Logika untuk mengacak produk
+    if (product) {
+      const shuffled = [...products]
+        .filter(p => p.id !== product.id) // Filter agar produk saat ini tidak muncul
+        .sort(() => Math.random() - 0.5)   // Acak urutan
+        .slice(0, 3);                      // Ambil 3 teratas
+      
+      setSuggestedProducts(shuffled);
+    }
+  }, [id, product]); // Berjalan ulang jika ID berubah atau produk berubah
 
   if (!product) {
     return (
@@ -47,7 +60,7 @@ export const ProductDetail = () => {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight">
             {product.name}
           </h1>
-          <p className="text-xl text-white/70 mt-4">{product.category}</p>
+          <p className="text-xl text-white/70 mt-4 uppercase tracking-widest">{product.category}</p>
         </div>
       </section>
 
@@ -73,13 +86,15 @@ export const ProductDetail = () => {
               </div>
 
               {/* Thumbnail Gallery */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => {
-                      setImageLoaded(false);
-                      setSelectedImage(index);
+                      if (selectedImage !== index) {
+                        setImageLoaded(false);
+                        setSelectedImage(index);
+                      }
                     }}
                     className={`aspect-square rounded-2xl overflow-hidden bg-muted border-2 transition-all duration-300 ${
                       selectedImage === index
@@ -105,7 +120,7 @@ export const ProductDetail = () => {
                 <h2 className="text-3xl font-semibold mb-4 text-foreground">
                   The Story
                 </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
                   {product.story}
                 </p>
               </div>
@@ -151,42 +166,42 @@ export const ProductDetail = () => {
               </div>
 
               <div className="space-y-4 pt-6 border-t border-border">
-  <h3 className="text-xl font-semibold text-foreground">
-    Available At
-  </h3>
+                <h3 className="text-xl font-semibold text-foreground">
+                  Available At
+                </h3>
 
-  <div className="flex flex-col sm:flex-row gap-4">
-    {product.links?.shopee && (
-      <Button
-        asChild
-        className="flex-1 h-14 text-base bg-navy text-white hover:bg-navy/90 rounded-2xl"
-      >
-        <a
-          href={product.links.shopee}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Shop on Shopee
-        </a>
-      </Button>
-    )}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {product.links?.shopee && (
+                    <Button
+                      asChild
+                      className="flex-1 h-14 text-base bg-navy text-white hover:bg-navy/90 rounded-2xl"
+                    >
+                      <a
+                        href={product.links.shopee}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Shop on Shopee
+                      </a>
+                    </Button>
+                  )}
 
-    {product.links?.tiktok && (
-      <Button
-        asChild
-        className="flex-1 h-14 text-base bg-navy text-white hover:bg-navy/90 rounded-2xl"
-      >
-        <a
-          href={product.links.tiktok}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Shop on TikTok
-        </a>
-      </Button>
-    )}
-  </div>
-</div>
+                  {product.links?.tiktok && (
+                    <Button
+                      asChild
+                      className="flex-1 h-14 text-base bg-navy text-white hover:bg-navy/90 rounded-2xl"
+                    >
+                      <a
+                        href={product.links.tiktok}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Shop on TikTok
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -199,35 +214,32 @@ export const ProductDetail = () => {
             More from the Collection
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products
-              .filter(p => p.id !== product.id)
-              .slice(0, 3)
-              .map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/product/${item.id}`}
-                  className="group block"
-                >
-                  <div className="bg-card rounded-3xl overflow-hidden shadow-soft hover-lift">
-                    <div className="aspect-square bg-muted overflow-hidden">
-                      <img
-                        src={item.images[0]}
-                        alt={item.name}
-                        className="w-full h-full object-cover hover-zoom"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {item.category}
-                      </p>
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {item.name}
-                      </h3>
-                    </div>
+            {suggestedProducts.map((item) => (
+              <Link
+                key={item.id}
+                to={`/product/${item.id}`}
+                className="group block"
+              >
+                <div className="bg-card rounded-3xl overflow-hidden shadow-soft hover-lift">
+                  <div className="aspect-square bg-muted overflow-hidden">
+                    <img
+                      src={item.images[0]}
+                      alt={item.name}
+                      className="w-full h-full object-cover hover-zoom"
+                      loading="lazy"
+                    />
                   </div>
-                </Link>
-              ))}
+                  <div className="p-6">
+                    <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider">
+                      {item.category}
+                    </p>
+                    <h3 className="text-xl font-semibold text-foreground">
+                      {item.name}
+                    </h3>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
