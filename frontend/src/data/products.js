@@ -13,6 +13,7 @@ import navy from '@/assets/cover/NAVY.png';
 import navy1 from '@/assets/navy/navy1.png';
 import navy2 from '@/assets/navy/navy2.png';
 import navy3 from '@/assets/navy/navy3.png';
+import navy4 from '@/assets/navy/navy4.png';
 
 import marun from '@/assets/cover/MAROON.png';
 import marun1 from '@/assets/maroon/maroon1.png';
