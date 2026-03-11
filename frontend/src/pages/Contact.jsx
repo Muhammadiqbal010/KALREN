@@ -68,13 +68,13 @@ export const Contact = () => {
               }`}
             >
               <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.98] md:leading-[1.02] tracking-[-0.04em] uppercase text-white">
-                LET’S TALK.
+                CONNECT WITH
                 <br className="hidden sm:block" />
-                ABOUT THE DETAILS.
+                THE CIRCLE
               </h1>
 
               <p className="mt-8 md:mt-10 text-lg sm:text-xl md:text-2xl lg:text-2xl font-light tracking-[0.20em] uppercase text-slate-200/85">
-                Tanya stok. Bahas size. Atau sekadar ngobrol soal style.
+                Tanya stok, pilih size, atau ngobrol soal style bersama circle KALREN
               </p>
             </div>
           </div>
@@ -99,7 +99,15 @@ export const Contact = () => {
         </span>
 
         <span className="text-white font-black text-3xl md:text-5xl uppercase tracking-[0.15em]">
-          PRECISE CONTROL
+          BUILT FOR YOUR CIRCLE
+        </span>
+
+        <span className="text-white font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          ●
+        </span>
+
+        <span className="text-white font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
+          PREMIUM STREETWEAR
         </span>
 
         <span className="text-white font-black text-3xl md:text-5xl uppercase tracking-[0.15em] ">
@@ -135,13 +143,13 @@ export const Contact = () => {
             </p>
 
             <p className="mt-8 md:mt-10 text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-              Bukan produksi cepat. Bukan kompromi bahan.
-              Setiap piece melalui proses yang sama disiplin, presisi, dan kontrol kualitas.
+              Bukan sekadar mengikuti tren.
+              Setiap piece dibuat dengan fokus pada kenyamanan, kualitas material, dan karakter desain
             </p>
 
             <p className="mt-6 text-lg md:text-xl text-gray-500 leading-relaxed">
-              Website ini hadir untuk memperkenalkan nilai dan pendekatan kami.
-              Seluruh transaksi dilakukan melalui official online store.
+              Website ini hadir untuk memperkenalkan KALREN dan nilai yang kami bawa 
+              Seluruh pembelian dapat dilakukan melalui official online store kami
             </p>
           </div>
         </section>
@@ -157,13 +165,13 @@ export const Contact = () => {
               {[
                 {
                   platform: 'Shopee',
-                  desc: 'Platform resmi untuk transaksi terverifikasi dan pengiriman terintegrasi.',
+                  desc: 'Official store KALREN untuk pembelian mudah, aman, dan pengiriman ke seluruh Indonesia',
                   url: 'https://id.shp.ee/ck2XBp1L',
                   logo: SHOPEE_LOGO,
                 },
                 {
                   platform: 'TikTok Shop',
-                  desc: 'Akses langsung melalui konten, live session, dan drop terbaru.',
+                  desc: 'Temukan drop terbaru KALREN melalui konten, live session, dan update produk',
                   url: ' https://vt.tiktok.com/ZSmv4mcrG/?page=Mall',
                   logo: TIKTOK_SHOP_LOGO,
                 },
@@ -207,8 +215,8 @@ export const Contact = () => {
         <section className="py-24 md:py-32 bg-white border-t border-gray-100/50">
           <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-20 text-center">
             <p className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-10">
-              Ikuti perkembangan drop terbaru dan<br className="hidden sm:block" />
-              dokumentasi proses produksi melalui kanal resmi berikut.
+              Ikuti perjalanan KALREN, update drop terbaru,<br className="hidden sm:block" />
+              dan inspirasi style melalui kanal resmi kami.
             </p>
 
             <div className="flex flex-wrap justify-center gap-10 md:gap-16 lg:gap-24">
@@ -263,8 +271,8 @@ export const Contact = () => {
         <section className="py-32 lg:py-40 bg-navy text-white/95">
           <div className="max-w-4xl mx-auto px-6 md:px-12 text-center">
             <p className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
-              Setiap produk KALREN dibuat dengan kontrol penuh.<br />
-              <span className="font-semibold tracking-[-0.015em]">Itu standar kami.</span>
+              KALREN dibuat untuk kenyamanan, style, dan<br />
+              <span className="font-semibold tracking-[-0.015em]">circle yang bergerak bersama</span>
             </p>
           </div>
         </section>

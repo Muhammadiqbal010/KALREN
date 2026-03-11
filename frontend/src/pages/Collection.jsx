@@ -5,6 +5,7 @@ import { BlurImage } from '@/components/ui/BlurImage';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
 import { products } from '@/data/products';
+import churchTexture from '@/assets/textures/church.png';
 
 const categoriesList = ['SEMUA', ...new Set(products.map(p => p.category.toUpperCase()))];
 
@@ -14,8 +15,8 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  hidden: { y: 30, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 };
 
 export const Collection = () => {
@@ -37,39 +38,88 @@ export const Collection = () => {
     : products.filter(p => p.category.toUpperCase() === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-white font-body selection:bg-navy selection:text-white">
+    <div className="min-h-screen bg-white font-body selection:bg-navy selection:text-white overflow-x-hidden">
+      
+      {/* 0. GLOBAL TEXTURE Overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] mix-blend-overlay"
+        style={{
+          backgroundImage: `url(${churchTexture})`,
+          backgroundSize: '250px',
+        }}
+      />
+
       <Navigation />
 
-      {/* HERO SECTION */}
-      <section className="bg-navy py-32 mt-20 text-center overflow-hidden">
-        <motion.h1 
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-6xl md:text-8xl font-heading font-bold text-white tracking-tightest"
-        >
-          THE LINEUP
-        </motion.h1>
-        <p className="text-[10px] text-gray-400 uppercase tracking-luxury mt-4 font-bold">
-          {selectedCategory} / {filteredProducts.length} PIECES
-        </p>
-      </section>
+{/* 1. HERO SECTION */}
+<section className="relative h-screen bg-navy flex items-center justify-center overflow-hidden">
+  {/* Decorative Background Circles */}
+  <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+      <div className="w-[120vh] h-[120vh] border border-white/[0.03] rounded-full absolute" />
+      <div className="w-[80vh] h-[80vh] border border-white/[0.05] rounded-full absolute" />
+      <div className="text-white text-[20vw] font-black opacity-[0.02] tracking-tighter absolute uppercase">
+        {/* Sesuaikan teks background-nya: LINEUP atau ABOUT */}
+        LINEUP 
+      </div>
+  </div>
 
-      {/* FILTER CATEGORY - Font Balik ke Awal & Tanpa Magnetic */}
-      <section className="py-12 border-b border-gray-200 sticky top-[80px] bg-white z-20">
-        <div className="flex justify-center gap-6 md:gap-10 uppercase tracking-luxury text-[10px] md:text-xs font-bold">
+  {/* Main Content Wrapper - Fokus di Tengah */}
+  <div className="relative z-10 text-center px-6">
+      <motion.h1 
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="text-7xl md:text-[10rem] font-black text-white leading-[0.8] tracking-tighter uppercase"
+      >
+        {/* Ganti teks sesuai halaman */}
+        THE <br /> LINEUP
+      </motion.h1>
+      <motion.p 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="text-[10px] md:text-xs text-blue-400 uppercase tracking-[1em] mt-12 font-black"
+      >
+        {/* Teks Subtitle */}
+        {selectedCategory} — {filteredProducts.length} PIECES AVAILABLE
+      </motion.p>
+  </div>
+
+  {/* Scroll Indicator - SEKARANG DI LUAR WRAPPER TEKS */}
+  <div className="absolute bottom-12 left-0 w-full z-20 flex flex-col items-center gap-3 pointer-events-none">
+    <motion.span 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1 }}
+      className="text-[8px] text-white/30 uppercase tracking-[0.5em] font-bold"
+    >
+      Scroll Down
+    </motion.span>
+    <motion.div 
+      initial={{ height: 0 }}
+      animate={{ height: 48 }}
+      transition={{ delay: 1.2, duration: 1 }}
+      className="w-[1px] bg-gradient-to-b from-blue-500/50 to-transparent" 
+    />
+  </div>
+</section>
+
+      {/* 2. FILTER CATEGORY - Sticky & Minimalist */}
+      <section className="py-10 border-b border-gray-100 sticky top-[80px] bg-white/80 backdrop-blur-xl z-20">
+        <div className="flex justify-center flex-wrap gap-8 md:gap-14 uppercase tracking-[0.4em] text-[10px] font-black">
           {categoriesList.map((category) => (
             <button
               key={category}
               onClick={() => handleCategoryChange(category)}
-              className={`relative pb-2 transition-colors duration-300 ${
-                selectedCategory === category ? 'text-navy' : 'text-gray-400 hover:text-navy'
+              className={`relative pb-3 transition-all duration-500 ${
+                selectedCategory === category ? 'text-navy scale-110' : 'text-gray-300 hover:text-navy'
               }`}
             >
               {category}
               {selectedCategory === category && (
                 <motion.span 
-                  layoutId="underline"
-                  className="absolute left-0 bottom-0 w-full h-[2px] bg-navy" 
+                  layoutId="underline_collection"
+                  className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-1 h-1 bg-navy rounded-full" 
                 />
               )}
             </button>
@@ -77,54 +127,61 @@ export const Collection = () => {
         </div>
       </section>
 
-      {/* PRODUCTS GRID */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-6">
+{/* 3. PRODUCTS GRID */}
+<section className="py-32 bg-gray-50/50">
+  <div className="max-w-7xl mx-auto px-6">
+    <motion.div 
+      key={selectedCategory} 
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16 items-stretch" // Tambahin items-stretch
+    >
+      <AnimatePresence mode="popLayout">
+        {filteredProducts.map((product) => (
           <motion.div 
-            key={selectedCategory} 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12"
+            key={product.id} 
+            className="h-full" // Paksa wrapper motion punya tinggi penuh
           >
-            <AnimatePresence mode="popLayout">
-              {filteredProducts.map((product) => (
-                <motion.div 
-                  key={product.id} 
-                  variants={itemVariants}
-                  layout 
-                >
-                  <Link to={`/product/${product.slug}`} className="group block">
-                    <div className="rounded-[2rem] overflow-hidden bg-muted shadow-soft hover-lift transition-all duration-500 border border-transparent hover:border-gray-100">
-                      {/* Ratio Balik 1:1 (Aspect Square) */}
-                      <div className="aspect-square overflow-hidden relative">
-                        <BlurImage
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="group-hover:scale-110 transition duration-700"
-                        />
-                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      
-                      <div className="p-8 bg-white text-center sm:text-left">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-luxury mb-2 font-bold">
-                          {product.category}
-                        </p>
-                        <h3 className="text-xl font-heading font-bold text-navy group-hover:text-primary transition-colors uppercase">
-                          {product.name}
-                        </h3>
-                        <div className="mt-4 flex items-center justify-center sm:justify-start gap-2 text-[10px] font-bold text-gray-500 tracking-luxury group-hover:text-navy transition-colors">
-                          EXPLORE PIECE <span>→</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            <Link to={`/product/${product.slug}`} className="group block h-full">
+              <div className="flex flex-col h-full relative rounded-[2rem] overflow-hidden bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-gray-100 transition-all duration-500 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] group-hover:-translate-y-4">
+                
+                {/* 1. Gambar - Fixed Aspect Ratio */}
+                <div className="aspect-square overflow-hidden relative bg-slate-100 flex-shrink-0">
+                  <BlurImage
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-navy/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </div>
+                
+                {/* 2. Info - Flex Grow biar rata bawah */}
+                <div className="p-10 text-center flex flex-col flex-grow justify-between">
+                  <div>
+                    <span className="text-[10px] text-blue-500 uppercase tracking-[0.4em] mb-3 block font-black">
+                      {product.category}
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-navy uppercase tracking-tight mb-6 min-h-[3.5rem] flex items-center justify-center">
+                      {product.name}
+                    </h3>
+                  </div>
+                  
+                  {/* Interactive Explore Line - Bakal selalu nempel di paling bawah info */}
+                  <div className="flex items-center justify-center gap-4 opacity-40 group-hover:opacity-100 transition-opacity duration-500 mt-auto">
+                      <div className="h-[1.5px] w-6 bg-navy/20 group-hover:w-10 group-hover:bg-navy transition-all duration-700" />
+                      <span className="text-[10px] font-black text-navy tracking-[0.3em] uppercase">
+                          Details
+                      </span>
+                      <div className="h-[1.5px] w-6 bg-navy/20 group-hover:w-10 group-hover:bg-navy transition-all duration-700" />
+                  </div>
+                </div>
+
+              </div>
+            </Link>
           </motion.div>
-        </div>
-      </section>
+        ))}
+      </AnimatePresence>
+    </motion.div>
+  </div>
+</section>
 
       <Footer />
     </div>
