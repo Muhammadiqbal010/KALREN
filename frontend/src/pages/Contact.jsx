@@ -20,61 +20,48 @@ export const Contact = () => {
   }, []);
 
   return (
-    /* 1. Tambahkan ReactLenis root untuk smooth scroll di seluruh halaman */
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
-      <div className="relative min-h-screen w-full max-w-[100vw] bg-white text-gray-900 overflow-x-hidden antialiased">
-        {/* Global texture */}
-        <div
-          className="fixed inset-0 pointer-events-none z-[-2]"
-          style={{
+      <div className="relative min-h-screen w-full bg-white text-gray-900 overflow-x-hidden antialiased font-['Inter']">
+        
+        {/* 0. GLOBAL TEXTURE OVERLAY */}
+        <div 
+          className="fixed inset-0 z-[50] pointer-events-none opacity-[0.05] mix-blend-overlay"
+          style={{ 
             backgroundImage: `url(${churchTexture})`,
-            opacity: 0.05,
-            backgroundSize: '1400px',
-            backgroundRepeat: 'repeat',
-            mixBlendMode: 'multiply',
-            backgroundAttachment: 'fixed',
-            filter: 'blur(1.8px) grayscale(45%)',
+            backgroundSize: '300px',
+            backgroundRepeat: 'repeat'
           }}
         />
 
         <Navigation />
 
-        {/* HERO */}
-        <section className="relative min-h-[85vh] sm:min-h-screen flex items-center justify-center bg-navy overflow-hidden pt-20 sm:pt-24 md:pt-28 lg:pt-32">
-          <div
-            className="absolute inset-0 pointer-events-none z-0"
-            style={{
-              background: 'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.07) 0%, transparent 70%)',
-            }}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none z-0"
-            style={{
-              backgroundImage: `url(${churchTexture})`,
-              opacity: 0.06,
-              backgroundSize: '1600px',
-              backgroundRepeat: 'repeat',
-              mixBlendMode: 'multiply',
-              filter: 'blur(2.5px)',
-            }}
-          />
+        {/* 1. HERO SECTION - Match dengan style About */}
+        <section className="relative h-screen bg-navy overflow-hidden flex flex-col items-center justify-center">
+          
+          {/* Background Decor - KALREN Giant Text */}
+          <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+            <div className="text-white text-[22vw] font-black select-none opacity-[0.02] tracking-tighter uppercase">
+              CONTACT
+            </div>
+          </div>
+          
+          {/* Lingkaran Animasi Dinamis */}
+          <div className="absolute w-[85vh] h-[85vh] border border-white/[0.03] rounded-full animate-[spin_60s_linear_infinite] z-0" />
+          <div className="absolute w-[65vh] h-[65vh] border border-white/[0.05] rounded-full animate-[spin_40s_linear_infinite_reverse] z-0" />
+          <div className="absolute w-[45vh] h-[45vh] border border-white/[0.02] rounded-full z-0" />
 
-          <div className="relative max-w-6xl mx-auto px-6 md:px-12 lg:px-16 text-center z-10">
-            <div
-              className={`transition-[opacity,transform] duration-[2400ms] ease-out ${
-                isVisible 
-                  ? "opacity-100 translate-y-0" 
-                  : "opacity-0 translate-y-16"
-              }`}
-            >
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.98] md:leading-[1.02] tracking-[-0.04em] uppercase text-white">
-                CONNECT WITH
-                <br className="hidden sm:block" />
-                THE CIRCLE
-              </h1>
+          {/* Main Content */}
+          <div className={`relative z-10 text-center px-6 transition-all duration-[1500ms] ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
+            <h1 className="text-5xl sm:text-7xl md:text-[8rem] font-black leading-[0.85] tracking-tighter uppercase text-white mb-10">
+              CONNECT WITH<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+                THE CIRCLE.
+              </span>
+            </h1>
 
-              <p className="mt-8 md:mt-10 text-lg sm:text-xl md:text-2xl lg:text-2xl font-light tracking-[0.20em] uppercase text-slate-200/85">
-                Tanya stok, pilih size, atau ngobrol soal style bersama circle KALREN
+            <div className="max-w-xl mx-auto">
+              <p className="text-sm md:text-base font-light tracking-[0.2em] uppercase text-slate-400 leading-relaxed italic">
+                Tanya stok, pilih size, atau ngobrol soal style bersama circle KALREN.
               </p>
             </div>
           </div>
