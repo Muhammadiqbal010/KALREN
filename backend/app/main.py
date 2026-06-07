@@ -206,9 +206,13 @@ def get_cms():
 
 from app.core.config import MONGODB_URL
 
-@app.get("/debug")
-async def debug():
+@app.get("/debug-uri")
+async def debug_uri():
+    import os
+
+    uri = os.getenv("MONGODB_URL", "")
+
     return {
-        "mongodb_exists": bool(MONGODB_URL),
-        "mongodb_prefix": MONGODB_URL[:30]
+        "starts_with": uri[:20],
+        "length": len(uri)
     }
