@@ -31,10 +31,7 @@ app = FastAPI(
 # =========================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://kalren.vercel.app",
-        "http://localhost:3000"
-    ],
+    allow_origins=["https://kalren.vercel.app"], # Domain frontend kamu
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -202,3 +199,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.get("/api/cms")
+def get_cms():
+    return {"status": "ok"}
