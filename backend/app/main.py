@@ -203,3 +203,12 @@ async def health_check():
 @app.get("/api/cms")
 def get_cms():
     return {"status": "ok"}
+
+from app.core.config import MONGODB_URL
+
+@app.get("/debug")
+async def debug():
+    return {
+        "mongodb_exists": bool(MONGODB_URL),
+        "mongodb_prefix": MONGODB_URL[:30]
+    }
