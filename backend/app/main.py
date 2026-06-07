@@ -31,7 +31,7 @@ app = FastAPI(
 # =========================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://kalren.vercel.app"], # Domain frontend kamu
+    allow_origins=["https://kalren.vercel.app"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
