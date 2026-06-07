@@ -5,12 +5,17 @@ from dotenv import load_dotenv
 # Load data dari file .env
 load_dotenv()
 
+
 # Ambil URL MongoDB dari .env
 MONGODB_URL = os.getenv("MONGODB_URL")
 
-# Inisialisasi Client
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL)
+# TAMBAHKAN INI UNTUK DEBUGGING
+if not MONGODB_URL:
+    print("WARNING: MONGODB_URL tidak ditemukan di Environment Variables!")
+else:
+    print(f"DEBUG: MONGODB_URL berhasil terbaca: {MONGODB_URL[:10]}****") # Hanya tampilkan awalannya
 
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL)
 # Tentukan Database 
 database = client.kalren_db 
 
