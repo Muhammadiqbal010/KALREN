@@ -1,188 +1,164 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../api/axios';
 import { BlurImage } from '@/components/ui/BlurImage';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
-import { products } from '@/data/products';
-import churchTexture from '@/assets/textures/church.png';
-
-const categoriesList = ['SEMUA', ...new Set(products.map(p => p.category.toUpperCase()))];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
-
-const itemVariants = {
-  hidden: { y: 30, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
-};
 
 export const Collection = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedCategory, setSelectedCategory] = useState('SEMUA');
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState(['SEMUA']);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const cat = searchParams.get('category')?.toUpperCase();
-    setSelectedCategory(categoriesList.includes(cat) ? cat : 'SEMUA');
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const category = searchParams.get('category') || 'SEMUA';
+        const search = searchParams.get('search') || '';
+
+        const res = await api.get('/api/admin/list');
+        const allProducts = res.data || [];
+
+        const activeProductsOnly = allProducts.filter((item) => item.is_active !== false);
+        const uniqueCategories = [
+          'SEMUA',
+          ...new Set(activeProductsOnly.map((item) => item.series?.toUpperCase()).filter(Boolean)),
+        ];
+        setCategories(uniqueCategories);
+
+        let filteredResult = [...activeProductsOnly];
+
+        if (category !== 'SEMUA') {
+          filteredResult = filteredResult.filter(
+            (item) => item.series?.toUpperCase() === category.toUpperCase()
+          );
+        }
+
+        if (search) {
+          filteredResult = filteredResult.filter((item) =>
+            item.name?.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+
+        setProducts(filteredResult);
+      } catch (err) {
+        console.error('Gagal memuat katalog produk:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, [searchParams]);
 
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    setSearchParams(category === 'SEMUA' ? {} : { category });
+    const currentSearch = searchParams.get('search');
+    const params = category === 'SEMUA' ? {} : { category };
+    if (currentSearch) params.search = currentSearch;
+    setSearchParams(params);
   };
 
-  const filteredProducts = selectedCategory === 'SEMUA' 
-    ? products 
-    : products.filter(p => p.category.toUpperCase() === selectedCategory);
+  const selectedCategory = searchParams.get('category')?.toUpperCase() || 'SEMUA';
 
   return (
-    <div className="min-h-screen bg-white font-body selection:bg-navy selection:text-white overflow-x-hidden">
-      
-      {/* 0. GLOBAL TEXTURE Overlay */}
-      <div
-        className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] mix-blend-overlay"
-        style={{
-          backgroundImage: `url(${churchTexture})`,
-          backgroundSize: '250px',
-        }}
-      />
-
+    // WARNA TETAP SESUAI KODE ASLIMU (bg-navy)
+    <div className="min-h-screen bg-navy text-white font-['Inter'] antialiased">
       <Navigation />
+      
+      <section className="relative h-[60vh] md:h-screen flex flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-[12vw] md:text-[9rem] font-black uppercase tracking-tighter text-white leading-none">
+          THE LINEUP
+        </h1>
+        <p className="text-slate-400 text-[9px] md:text-[10px] tracking-[0.4em] md:tracking-[0.5em] uppercase mt-4">
+          {products.length} Pieces In Archive
+        </p>
+      </section>
 
-{/* 1. HERO SECTION */}
-<section className="relative h-screen bg-navy flex items-center justify-center overflow-hidden">
-  {/* Decorative Background Circles */}
-  <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
-      <div className="w-[120vh] h-[120vh] border border-white/[0.03] rounded-full absolute" />
-      <div className="w-[80vh] h-[80vh] border border-white/[0.05] rounded-full absolute" />
-      <div className="text-white text-[20vw] font-black opacity-[0.02] tracking-tighter absolute uppercase">
-        {/* Sesuaikan teks background-nya: LINEUP atau ABOUT */}
-        LINEUP 
-      </div>
-  </div>
-
-  {/* Main Content Wrapper - Fokus di Tengah */}
-  <div className="relative z-10 text-center px-6">
-      <motion.h1 
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1 }}
-        className="text-7xl md:text-[10rem] font-black text-white leading-[0.8] tracking-tighter uppercase"
-      >
-        {/* Ganti teks sesuai halaman */}
-        THE <br /> LINEUP
-      </motion.h1>
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="text-[10px] md:text-xs text-blue-400 uppercase tracking-[1em] mt-12 font-black"
-      >
-        {/* Teks Subtitle */}
-        {selectedCategory} — {filteredProducts.length} PIECES AVAILABLE
-      </motion.p>
-  </div>
-
-  {/* Scroll Indicator - SEKARANG DI LUAR WRAPPER TEKS */}
-  <div className="absolute bottom-12 left-0 w-full z-20 flex flex-col items-center gap-3 pointer-events-none">
-    <motion.span 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 1 }}
-      className="text-[8px] text-white/30 uppercase tracking-[0.5em] font-bold"
-    >
-      Scroll Down
-    </motion.span>
-    <motion.div 
-      initial={{ height: 0 }}
-      animate={{ height: 48 }}
-      transition={{ delay: 1.2, duration: 1 }}
-      className="w-[1px] bg-gradient-to-b from-blue-500/50 to-transparent" 
-    />
-  </div>
-</section>
-
-      {/* 2. FILTER CATEGORY - Sticky & Minimalist */}
-      <section className="py-10 border-b border-gray-100 sticky top-[80px] bg-white/80 backdrop-blur-xl z-20">
-        <div className="flex justify-center flex-wrap gap-8 md:gap-14 uppercase tracking-[0.4em] text-[10px] font-black">
-          {categoriesList.map((category) => (
-            <button
-              key={category}
-              onClick={() => handleCategoryChange(category)}
-              className={`relative pb-3 transition-all duration-500 ${
-                selectedCategory === category ? 'text-navy scale-110' : 'text-gray-300 hover:text-navy'
+      <section className="sticky top-[64px] md:top-[80px] z-30 bg-white border-b border-gray-200 py-4 md:py-8 overflow-x-auto no-scrollbar">
+        <div className="flex justify-center items-center gap-6 md:gap-12 px-6 mx-auto w-full max-w-7xl">
+          {categories.map((cat) => (
+            <button 
+              key={cat} 
+              onClick={() => handleCategoryChange(cat)} 
+              className={`uppercase text-[10px] font-black tracking-[0.25em] md:tracking-[0.4em] transition-colors duration-300 whitespace-nowrap ${
+                selectedCategory === cat ? 'text-black font-black' : 'text-gray-400 hover:text-black'
               }`}
             >
-              {category}
-              {selectedCategory === category && (
-                <motion.span 
-                  layoutId="underline_collection"
-                  className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-1 h-1 bg-navy rounded-full" 
-                />
-              )}
+              {cat}
             </button>
           ))}
         </div>
       </section>
 
-{/* 3. PRODUCTS GRID */}
-<section className="py-32 bg-gray-50/50">
-  <div className="max-w-7xl mx-auto px-6">
-    <motion.div 
-      key={selectedCategory} 
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16 items-stretch" // Tambahin items-stretch
-    >
-      <AnimatePresence mode="popLayout">
-        {filteredProducts.map((product) => (
-          <motion.div 
-            key={product.id} 
-            className="h-full" // Paksa wrapper motion punya tinggi penuh
-          >
-            <Link to={`/product/${product.slug}`} className="group block h-full">
-              <div className="flex flex-col h-full relative rounded-[2rem] overflow-hidden bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-gray-100 transition-all duration-500 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] group-hover:-translate-y-4">
-                
-                {/* 1. Gambar - Fixed Aspect Ratio */}
-                <div className="aspect-square overflow-hidden relative bg-slate-100 flex-shrink-0">
-                  <BlurImage
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-90"
-                  />
-                  <div className="absolute inset-0 bg-navy/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-                
-                {/* 2. Info - Flex Grow biar rata bawah */}
-                <div className="p-10 text-center flex flex-col flex-grow justify-between">
-                  <div>
-                    <span className="text-[10px] text-blue-500 uppercase tracking-[0.4em] mb-3 block font-black">
-                      {product.category}
-                    </span>
-                    <h3 className="text-xl md:text-2xl font-black text-navy uppercase tracking-tight mb-6 min-h-[3.5rem] flex items-center justify-center">
-                      {product.name}
-                    </h3>
-                  </div>
-                  
-                  {/* Interactive Explore Line - Bakal selalu nempel di paling bawah info */}
-                  <div className="flex items-center justify-center gap-4 opacity-40 group-hover:opacity-100 transition-opacity duration-500 mt-auto">
-                      <div className="h-[1.5px] w-6 bg-navy/20 group-hover:w-10 group-hover:bg-navy transition-all duration-700" />
-                      <span className="text-[10px] font-black text-navy tracking-[0.3em] uppercase">
-                          Details
-                      </span>
-                      <div className="h-[1.5px] w-6 bg-navy/20 group-hover:w-10 group-hover:bg-navy transition-all duration-700" />
-                  </div>
-                </div>
+      <section className="bg-white py-12 md:py-24 min-h-screen">
+        <div className="max-w-7xl mx-auto px-3 md:px-6">
+          {loading ? (
+            <div className="text-center py-40 font-black text-navy text-xs md:text-sm tracking-[0.3em] animate-pulse">
+              LOADING ARCHIVE...
+            </div>
+          ) : (
+            // FIX LAYOUT: Grid responsif yang presisi untuk semua ukuran layar
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 md:gap-20">
+              {products.map((product) => {
+                const hasDiscount = product.is_discount === true && product.compare_price > product.price;
+                const productID = product.id || product._id;
+                const cover = product.image_urls?.[0] || "https://res.cloudinary.com/ddxplesul/image/upload/v1778695884/placeholder.jpg";
 
-              </div>
-            </Link>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </motion.div>
-  </div>
-</section>
+                return (
+                  <Link key={productID} to={`/product/${productID}`} className="group block">
+                    <div className="rounded-[1.2rem] md:rounded-[2.2rem] bg-neutral-50 overflow-hidden relative shadow-xs">
+                      
+                      {hasDiscount && (
+                        <div className="absolute top-3 right-3 md:top-6 md:right-6 z-10 bg-red-600 text-white text-[7px] md:text-[9px] font-black uppercase tracking-widest px-2.5 py-1 md:px-4 md:py-1.5 rounded-full shadow-md">
+                          Sale
+                        </div>
+                      )}
 
+                      <div className="aspect-[4/5] overflow-hidden bg-zinc-100">
+                        <img 
+                          src={cover} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        />
+                      </div>
+
+                      <div className="p-3 md:p-8 text-center text-neutral-900">
+                        <p className="text-[8px] md:text-[9px] font-bold tracking-[0.25em] md:tracking-[0.35em] text-neutral-400 uppercase mb-1 md:mb-2">
+                          {product.series}
+                        </p>
+                        
+                        <h3 className="text-xs md:text-xl font-black uppercase mb-2 md:mb-4 h-10 md:h-14 flex items-center justify-center line-clamp-2 leading-tight">
+                          {product.name}
+                        </h3>
+                        
+                        <div className="flex flex-col items-center justify-center min-h-[36px] md:min-h-[52px]">
+                          {hasDiscount ? (
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span className="text-[10px] md:text-[12px] text-red-500 font-bold line-through tracking-wider opacity-70">
+                                IDR {Number(product.compare_price).toLocaleString('id-ID')}
+                              </span>
+                              <span className="text-sm md:text-lg font-black font-mono text-black">
+                                IDR {Number(product.price).toLocaleString('id-ID')}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm md:text-lg font-black font-mono text-neutral-900">
+                              IDR {Number(product.price).toLocaleString('id-ID')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
       <Footer />
     </div>
   );

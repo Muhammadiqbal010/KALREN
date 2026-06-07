@@ -19,8 +19,9 @@ export const Navigation = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
     { name: 'Collection', path: '/collection' },
+    { name: 'Lookbook', path: '/lookbook' },
+    { name: 'About', path: '/about' },
     { name: 'Connect', path: '/contact' }
   ];
 

@@ -1,272 +1,591 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
-import { BlurImage } from '@/components/ui/BlurImage';
-import { Navigation } from '@/components/Navigation';
-import { Footer } from '@/components/Footer';
-import { products } from '@/data/products';
-import { Button } from '@/components/ui/button';
-import churchTexture from '@/assets/textures/church.png';
+import { useEffect, useMemo, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-export const ProductDetail = () => {
-  const { slug } = useParams();
-  const product = products.find(p => p.slug === slug);
-  
-  const [selectedImage, setSelectedImage] = useState(0);
+import api from "../api/axios";
+
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { BlurImage } from "@/components/ui/BlurImage";
+import { Button } from "@/components/ui/button";
+
+import churchTexture from "@/assets/textures/church.png";
+
+export default function ProductDetail() {
+  const { id } = useParams();
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState(0);
+  const [showArrows, setShowArrows] = useState(false);
+  const [hoverSide, setHoverSide] = useState(null);
   const [suggestedProducts, setSuggestedProducts] = useState([]);
 
   useEffect(() => {
-    setSelectedImage(0);
     window.scrollTo(0, 0);
 
-    if (product) {
-      const shuffled = [...products]
-        .filter(p => p.slug !== product.slug)
-        .sort(() => Math.random() - 0.5)   
-        .slice(0, 3);                      
-      
-      setSuggestedProducts(shuffled);
-    }
-  }, [slug, product]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-  if (!product) {
+        const detailRes = await api.get(`/api/admin/detail/${id}`);
+
+        setProduct(detailRes.data);
+        setActiveImage(0);
+
+        const allRes = await api.get("/api/admin/list");
+
+        const recommendations =
+          allRes.data
+            ?.filter((item) => item._id !== id)
+            ?.sort(() => Math.random() - 0.5)
+            ?.slice(0, 6) || [];
+
+        setSuggestedProducts(recommendations);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  const recommendations = useMemo(() => {
+    return suggestedProducts;
+  }, [suggestedProducts]);
+
+  const handleTrackClick = async (platform) => {
+    try {
+      await api.post(`/api/track-click/${id}`, null, {
+        params: { platform },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center font-body">
-        <div className="text-center">
-          <h2 className="text-3xl font-black mb-6 text-navy tracking-tighter uppercase italic">Piece Not Found</h2>
-          <Link to="/collection" className="px-8 py-3 bg-navy text-white text-xs font-black tracking-widest uppercase rounded-full hover:bg-blue-600 transition-all">
-            Return to Collection
-          </Link>
+      <div className="min-h-screen bg-white">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-8 pt-40">
+          <div className="animate-pulse space-y-6">
+            <div className="h-10 bg-gray-200 rounded w-1/3" />
+            <div className="h-[500px] bg-gray-200 rounded-[2rem]" />
+          </div>
         </div>
       </div>
     );
   }
 
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <h1 className="font-black text-2xl uppercase">
+          Product Not Found
+        </h1>
+      </div>
+    );
+  }
+
+  const images = product.image_urls || [];
+  const shopeeUrl = product.links?.shopee;
+  const tiktokUrl = product.links?.tiktok;
+
   return (
-    <motion.div 
-      key={slug} 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen bg-white font-body selection:bg-navy selection:text-white overflow-x-hidden"
-    >
+    <>
       <Helmet>
         <title>{product.name} | KALREN</title>
-        <meta name="description" content={product.story} />
       </Helmet>
 
-      <div
-        className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] mix-blend-overlay"
-        style={{ backgroundImage: `url(${churchTexture})`, backgroundSize: '250px' }}
-      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-white overflow-x-hidden"
+      >
+        <div
+          className="fixed inset-0 pointer-events-none opacity-[0.03] z-[9999]"
+          style={{
+            backgroundImage: `url(${churchTexture})`,
+            backgroundSize: "250px",
+          }}
+        />
 
-      <Navigation />
+        <Navigation />
 
-      {/* 1. MINIMAL HERO */}
-      <section className="bg-navy pt-32 pb-12 mt-0">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-4"
-          >
+        {/* HERO */}
+        <section className="bg-navy pt-32 md:pt-40 pb-16">
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-8">
+
             <Link
               to="/collection"
-              className="text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 inline-flex items-center gap-2 group w-fit"
+              className="inline-flex mb-8 text-xs uppercase tracking-[0.25em] text-white/50 hover:text-white transition"
             >
-              <span className="group-hover:-translate-x-1 transition-transform">←</span> 
-              Back to Collection
+              ← Back to Collection
             </Link>
-            
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-8">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">
-                  {product.name}
-                </h1>
-                <p className="text-[20px] text-blue-400 uppercase tracking-[0.5em] font-bold mt-2">
-                  {product.category} — 2026 Edition
-                </p>
-              </div>
+
+            <div className="border-b border-white/10 pb-10">
+              <h1
+                className="
+                  text-3xl
+                  sm:text-4xl
+                  md:text-5xl
+                  lg:text-6xl
+                  font-black
+                  uppercase
+                  text-white
+                  leading-none
+                  tracking-tight
+                "
+              >
+                {product.name}
+              </h1>
+
+              <p
+                className="
+                  mt-4
+                  text-xs
+                  sm:text-sm
+                  tracking-[0.4em]
+                  uppercase
+                  font-bold
+                  text-blue-400
+                "
+              >
+                {product.series}
+              </p>
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* 2. PRODUCT CONTENT */}
-      <section className="py-24 lg:py-32">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 lg:gap-32 items-start">
-            
-            {/* Left: Gallery with Smart Arrows */}
-            <div className="space-y-8">
-              <div className="group relative aspect-square rounded-[2.5rem] overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedImage}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0 w-full h-full"
-                  >
-                    <BlurImage
-                      src={product.images[selectedImage]}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </motion.div>
-                </AnimatePresence>
+        {/* PRODUCT */}
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-8">
 
-                {/* Smart Navigation - Area Kiri */}
-                <div 
-                  className="absolute left-0 top-0 w-1/2 h-full z-20 flex items-center justify-start pl-8 cursor-pointer group/left"
-                  onClick={() => setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    whileHover={{ opacity: 1, x: 0 }}
-                    className="bg-navy/80 backdrop-blur-md p-4 rounded-full text-white shadow-xl border border-white/10"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                  </motion.div>
-                </div>
+            <div className="grid lg:grid-cols-2 gap-10 xl:gap-20">
 
-                {/* Smart Navigation - Area Kanan */}
-                <div 
-                  className="absolute right-0 top-0 w-1/2 h-full z-20 flex items-center justify-end pr-8 cursor-pointer group/right"
-                  onClick={() => setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    whileHover={{ opacity: 1, x: 0 }}
-                    className="bg-navy/80 backdrop-blur-md p-4 rounded-full text-white shadow-xl border border-white/10"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </motion.div>
-                </div>
-              </div>
+              {/* GALLERY */}
 
-              {/* Thumbnails */}
-              <div className="grid grid-cols-4 gap-4">
-                {product.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-2xl overflow-hidden bg-gray-50 border-2 transition-all duration-300 ${
-                      selectedImage === index ? 'border-navy scale-105' : 'border-transparent opacity-40 hover:opacity-100'
-                    }`}
-                  >
-                    <BlurImage src={image} alt="thumbnail" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            </div>
+<div className="space-y-4">
 
-            {/* Right: Details */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-10"
-            >
-              <div>
-                <h3 className="text-[20px] uppercase tracking-[0.3em] text-blue-500 font-bold mb-4">The Story</h3>
-                <p className="text-base md:text-lg text-slate-700 leading-relaxed font-normal italic bg-slate-50 p-6 rounded-2xl border-l-4 border-navy">
-                  "{product.story}"
-                </p>
-              </div>
+  <div
+  className="
+    relative
+    aspect-[4/5]
+    rounded-[2rem]
+    overflow-hidden
+    bg-slate-100
+  "
+  onMouseMove={(e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
 
-              <div className="grid grid-cols-2 gap-8 pt-4">
+    setHoverSide(
+      x < rect.width / 2 ? "left" : "right"
+    );
+  }}
+  onMouseLeave={() => setHoverSide(null)}
+  onTouchStart={(e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.touches[0].clientX - rect.left;
+
+    if (x < rect.width / 2) {
+      setActiveImage((prev) =>
+        prev === 0 ? images.length - 1 : prev - 1
+      );
+    } else {
+      setActiveImage((prev) =>
+        prev === images.length - 1 ? 0 : prev + 1
+      );
+    }
+  }}
+>
+    <BlurImage
+      src={images[activeImage]}
+      className="w-full h-full object-cover"
+    />
+
+    {/* PREVIOUS */}
+    {images.length > 1 && (
+      <button
+        type="button"
+        onClick={() =>
+          setActiveImage((prev) =>
+            prev === 0 ? images.length - 1 : prev - 1
+          )
+        }
+        className={`
+  absolute
+  left-4
+  top-1/2
+  -translate-y-1/2
+  w-11
+  h-11
+  rounded-full
+  bg-white/80
+  backdrop-blur-md
+  border
+  border-white/30
+  shadow-lg
+  flex
+  items-center
+  justify-center
+  z-20
+  transition-all
+  duration-200
+
+  ${
+    hoverSide === "left"
+      ? "opacity-100 scale-100"
+      : "opacity-0 scale-90 pointer-events-none"
+  }
+`}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 18L9 12L15 6"
+          />
+        </svg>
+      </button>
+    )}
+
+    {/* NEXT */}
+    {images.length > 1 && (
+      <button
+        type="button"
+        onClick={() =>
+          setActiveImage((prev) =>
+            prev === images.length - 1 ? 0 : prev + 1
+          )
+        }
+        className={`
+  absolute
+  right-4
+  top-1/2
+  -translate-y-1/2
+  w-11
+  h-11
+  rounded-full
+  bg-white/80
+  backdrop-blur-md
+  border
+  border-white/30
+  shadow-lg
+  flex
+  items-center
+  justify-center
+  z-20
+  transition-all
+  duration-200
+
+  ${
+    hoverSide === "right"
+      ? "opacity-100 scale-100"
+      : "opacity-0 scale-90 pointer-events-none"
+  }
+`}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 18L15 12L9 6"
+          />
+        </svg>
+      </button>
+    )}
+
+    {/* COUNTER */}
+    {images.length > 1 && (
+      <div
+        className="
+          absolute
+          bottom-4
+          left-1/2
+          -translate-x-1/2
+          px-3
+          py-1
+          rounded-full
+          bg-black/60
+          backdrop-blur-md
+          text-white
+          text-xs
+          font-semibold
+          z-20
+        "
+      >
+        {activeImage + 1} / {images.length}
+      </div>
+    )}
+  </div>
+
+  <div
+    className="
+      grid
+      grid-cols-4
+      sm:grid-cols-5
+      gap-3
+    "
+  >
+    {images.map((img, index) => (
+      <button
+        key={index}
+        onClick={() => setActiveImage(index)}
+        className={`
+          overflow-hidden
+          rounded-xl
+          border
+          transition-all
+          duration-300
+          ${
+            activeImage === index
+              ? "border-navy ring-2 ring-navy/20"
+              : "border-gray-200 hover:border-navy/40"
+          }
+        `}
+      >
+        <img
+          src={img}
+          alt=""
+          className="aspect-square object-cover w-full"
+        />
+      </button>
+    ))}
+  </div>
+
+</div>
+
+              {/* INFO */}
+
+              <div className="space-y-10">
+
                 <div>
-                  <h3 className="text-[20px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-2">Material</h3>
-                  <p className="text-sm font-semibold text-navy uppercase">{product.material}</p>
+                  <p
+                    className="
+                      text-xs
+                      uppercase
+                      tracking-[0.3em]
+                      text-blue-500
+                      font-black
+                      mb-4
+                    "
+                  >
+                    Description
+                  </p>
+
+                  <div
+                    className="
+                      bg-slate-50
+                      rounded-[2rem]
+                      p-6
+                      md:p-8
+                      border-l-[6px]
+                      border-navy
+                    "
+                  >
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                    >
+                      {product.description || ""}
+                    </ReactMarkdown>
+                  </div>
                 </div>
+
                 <div>
-                  <h3 className="text-[20px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-2">Available Sizes</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((size) => (
-                      <span key={size} className="px-3 py-1 bg-slate-100 text-navy text-[10px] font-bold rounded-md border border-slate-200">
+                  <p
+                    className="
+                      text-xs
+                      uppercase
+                      tracking-[0.3em]
+                      text-neutral-400
+                      mb-4
+                      font-black
+                    "
+                  >
+                    Available Sizes
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {product.available_sizes?.map((size) => (
+                      <div
+                        key={size}
+                        className="
+                          w-12
+                          h-12
+                          rounded-xl
+                          border-2
+                          border-navy
+                          flex
+                          items-center
+                          justify-center
+                          font-black
+                          text-navy
+                        "
+                      >
                         {size}
-                      </span>
+                      </div>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Care Instructions Removed per request */}
+                <div
+                  className="
+                    flex
+                    flex-col
+                    sm:flex-row
+                    gap-4
+                  "
+                >
+                  {shopeeUrl && (
+                    <Button
+                      asChild
+                      className="
+                        flex-1
+                        h-14
+                        bg-navy
+                        text-white
+                        rounded-xl
+                        font-black
+                      "
+                    >
+                      <a
+                        href={shopeeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() =>
+                          handleTrackClick("shopee")
+                        }
+                      >
+                        Order via Shopee
+                      </a>
+                    </Button>
+                  )}
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button asChild className="flex-1 h-14 bg-navy text-white text-xs font-bold tracking-widest uppercase rounded-xl hover:bg-blue-700 transition-all shadow-lg">
-                  <a href={product.links?.shopee} target="_blank" rel="noreferrer">Order via Shopee</a>
-                </Button>
-                <Button asChild className="flex-1 h-14 bg-white text-navy border-2 border-navy text-xs font-bold tracking-widest uppercase rounded-xl hover:bg-slate-50 transition-all">
-                  <a href={product.links?.tiktok} target="_blank" rel="noreferrer">Order via TikTok</a>
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. SUGGESTED PRODUCTS */}
-{/* 3. SUGGESTED PRODUCTS - Updated: No Zoom Effect */}
-<section className="py-24 bg-gray-50/50">
-  <div className="max-w-7xl mx-auto px-6 lg:px-12">
-    <div className="flex justify-between items-end mb-16 px-2">
-      <div>
-        <span className="text-[10px] uppercase tracking-[0.5em] text-blue-500 font-black mb-2 block">DISCOVER MORE</span>
-        <h2 className="text-4xl font-black text-navy uppercase tracking-tighter italic">THE ARCHIVE</h2>
-      </div>
-      <Link 
-        to="/collection" 
-        className="text-[10px] font-black text-navy uppercase tracking-[0.3em] hover:tracking-[0.5em] transition-all border-b-2 border-navy pb-1 italic"
-      >
-        ALL PIECES →
-      </Link>
-    </div>
-
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-      {suggestedProducts.map((item, index) => (
-        <motion.div
-          key={item.id}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: index * 0.1 }}
-        >
-          <Link to={`/product/${item.slug}`} className="group block h-full">
-            {/* Card Pop Up Effect (Translate & Shadow Only) */}
-            <div className="h-full bg-white rounded-[2rem] overflow-hidden border border-gray-100 transition-all duration-500 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.1)] group-hover:-translate-y-3">
-              <div className="aspect-square bg-gray-100 overflow-hidden relative">
-                {/* Image: scale-105 removed to stop zooming */}
-                <BlurImage 
-                  src={item.images[0]} 
-                  alt={item.name} 
-                  className="w-full h-full object-cover" 
-                />
-                <div className="absolute inset-0 bg-navy/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              </div>
-              <div className="p-8 text-center">
-                <p className="text-[9px] text-blue-500 uppercase tracking-[0.3em] font-black mb-2">{item.category}</p>
-                <h3 className="text-xl font-black text-navy uppercase tracking-tight">{item.name}</h3>
+                  {tiktokUrl && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="
+                        flex-1
+                        h-14
+                        rounded-xl
+                        border-2
+                        border-navy
+                        text-navy
+                        font-black
+                      "
+                    >
+                      <a
+                        href={tiktokUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() =>
+                          handleTrackClick("tiktok")
+                        }
+                      >
+                        Order via TikTok
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-          </Link>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-</section>
+          </div>
+        </section>
 
-      <Footer />
-    </motion.div>
+        {/* RECOMMENDATIONS */}
+
+        <section className="py-20 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-8">
+
+            <h2
+              className="
+                text-2xl
+                md:text-3xl
+                font-black
+                uppercase
+                text-navy
+                mb-10
+              "
+            >
+              Explore More
+            </h2>
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                xl:grid-cols-3
+                gap-8
+              "
+            >
+              {recommendations.map((item) => (
+                <Link
+                  key={item._id}
+                  to={`/product/${item._id}`}
+                  className="
+                    bg-white
+                    rounded-[1.5rem]
+                    overflow-hidden
+                    border
+                    border-gray-100
+                    hover:shadow-xl
+                    transition
+                  "
+                >
+                  <div className="aspect-[4/5]">
+                    <img
+                      src={item.image_urls?.[0]}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="p-6">
+                    <p className="text-xs uppercase text-gray-400 mb-2">
+                      {item.series}
+                    </p>
+
+                    <h3 className="font-black text-navy uppercase">
+                      {item.name}
+                    </h3>
+
+                    <p className="mt-3 font-bold text-navy">
+                      IDR{" "}
+                      {Number(item.price).toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <Footer />
+      </motion.div>
+    </>
   );
-};
-
-export default ProductDetail;
+}
