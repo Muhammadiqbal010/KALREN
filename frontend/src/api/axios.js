@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // Gunakan variabel lingkungan, fallback ke localhost jika tidak ada
-  baseURL: process.env.REACT_APP_API_URL || 'https://backend-kalren.vercel.app',
+  baseURL: process.env.REACT_APP_API_URL || 'https://backend-kalren.vercel.app/',
   withCredentials: true,
 });
 
