@@ -31,7 +31,10 @@ app = FastAPI(
 # =========================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⚡ WAJIB: Mengizinkan semua origin IP dinamis dari laptop lu
+    allow_origins=[
+        "https://kalren.vercel.app",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
