@@ -113,7 +113,7 @@ async def update_lookbook_item(id: str, title: str, sort_order: int, image: Opti
 
         # 4. Handle Image (Hanya jika ada file baru)
         if image and hasattr(image, 'filename') and image.filename:
-            file_bytes = await image.read()
+        file_bytes = await image.read()
             upload_result = cloudinary.uploader.upload(file_bytes, folder="kalren_lookbooks")
             new_image_url = upload_result.get("secure_url")
             
@@ -135,7 +135,7 @@ async def update_lookbook_item(id: str, title: str, sort_order: int, image: Opti
         print(f"CRITICAL ERROR IN UPDATE SERVICE: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-        
+
 # =========================================================
 # 🗑️ 4. PERMANENT DELETE CAMPAIGN (FIX PARAMETER DESTROY)
 # =========================================================

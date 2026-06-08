@@ -271,37 +271,29 @@ data.append('is_active', String(editData.is_active));
   const data = new FormData();
   data.append('title', editData.title);
   data.append('sort_order', editData.sort_order);
-  data.append('is_active', editData.is_active);
+  // Tambahkan is_active
+  data.append('is_active', String(editData.is_active)); 
+  
   if (editData.imageFile) {
     data.append('image', editData.imageFile);
   }
 
-    try {
-    // Tambahkan header Authorization di sini
+  try {
     await api.put(`/api/admin/lookbook/${editData.id}`, data, {
       headers: { 
         'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${user.token}` // Pastikan user.token tersedia
+        'Authorization': `Bearer ${user?.token}` 
       },
     });
-
-      await api.post('/api/admin/create-log', {
-        username: user?.username || 'Unknown Admin',
-        role: user?.role || 'admin',
-        action: 'EDIT LOOKBOOK',
-        target: editData.title.trim().toUpperCase(),
-        detail: `Berhasil mengubah struktur teks judul/urutan posisi katalog campaign`
-      }).catch(err => console.error("Log bypass:", err));
-
-      setEditModalOpen(false);
-      fetchLookbooks();
-      triggerPopup('success', 'Perubahan data campaign berhasil diperbarui.');
-    } catch (err) {
-      triggerPopup('error', 'Gagal memperbarui data perubahan campaign.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // ... sisa sukses ...
+  } catch (err) {
+    // Tambahkan log error di sini untuk melihat detailnya
+    console.error("Error Detail:", err.response?.data);
+    triggerPopup('error', err.response?.data?.detail || 'Gagal update.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeleteLookbook = (id, title) => {
     triggerPopup(

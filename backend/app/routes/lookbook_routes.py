@@ -68,33 +68,19 @@ async def modify_lookbook(
     id: str,
     title: str = Form(...),
     sort_order: int = Form(...),
-    is_active: bool = Form(True), # Tambahkan ini
-    image: Optional[UploadFile] = File(None),
+    is_active: bool = Form(True),
+    image: Optional[UploadFile] = File(None), # Pastikan ini File(None)
     current_user: dict = Depends(get_current_user)
 ):
-    # Validasi preventif dari data id sampah/invalid Bal
     if not ObjectId.is_valid(id):
-        raise HTTPException(status_code=400, detail="ID Campaign lookbook tidak valid!")
-
-    if not title.strip():
-        raise HTTPException(status_code=400, detail="Judul pembaruan campaign wajib diisi!")
-        
+        raise HTTPException(status_code=400, detail="ID tidak valid")
+    
     try:
-        # Panggil fungsi service yang udah nge-link ke cloudinary_helper central
         await update_lookbook_item(id, title, sort_order, image)
-        
-        # 🚀 AUDIT LOG PIPELINE SYSTEM
-        await create_audit_log(
-            current_user=current_user,
-            action="EDIT LOOKBOOK",
-            target=title.strip().toUpperCase(),
-            detail=f"Berhasil merombak susunan visual atau index sortir grid pada campaign lookbook ID: {id}."
-        )
-        
-        return {"success": True, "message": "Campaign lookbook updated successfully and trash images cleaned"}
-    except HTTPException as he:
-        raise he
+        return {"success": True, "message": "Updated"}
     except Exception as e:
+        # PENTING: Print ke log biar tahu kenapa error 500
+        print(f"ERROR DI ROUTE: {str(e)}") 
         raise HTTPException(status_code=500, detail=str(e))
 
 # =========================================================
