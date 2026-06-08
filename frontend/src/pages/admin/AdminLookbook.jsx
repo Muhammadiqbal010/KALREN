@@ -264,21 +264,25 @@ const AdminLookbook = () => {
   };
 
   const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    const data = new FormData();
-    data.append('title', editData.title);
-    data.append('sort_order', editData.sort_order);
-    data.append('is_active', editData.is_active);
-    if (editData.imageFile) {
-      data.append('image', editData.imageFile);
-    }
+  const data = new FormData();
+  data.append('title', editData.title);
+  data.append('sort_order', editData.sort_order);
+  data.append('is_active', editData.is_active);
+  if (editData.imageFile) {
+    data.append('image', editData.imageFile);
+  }
 
     try {
-      await api.put(`/api/admin/lookbook/${editData.id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+    // Tambahkan header Authorization di sini
+    await api.put(`/api/admin/lookbook/${editData.id}`, data, {
+      headers: { 
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${user.token}` // Pastikan user.token tersedia
+      },
+    });
 
       await api.post('/api/admin/create-log', {
         username: user?.username || 'Unknown Admin',
@@ -305,7 +309,7 @@ const AdminLookbook = () => {
       async () => {
         closePopup();
         try {
-          await api.delete(`/api/lookbook/${id}`);
+          await api.delete(`/api/admin/lookbook/${id}`);
 
           await api.post('/api/admin/create-log', {
             username: user?.username || 'Unknown Admin',
