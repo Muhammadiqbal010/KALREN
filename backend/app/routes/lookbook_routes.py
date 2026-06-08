@@ -67,7 +67,8 @@ async def add_lookbook(
 async def modify_lookbook(
     id: str,
     title: str = Form(...),
-    sort_order: int = Form(0),
+    sort_order: int = Form(...),
+    is_active: bool = Form(True), # Tambahkan ini
     image: Optional[UploadFile] = File(None),
     current_user: dict = Depends(get_current_user)
 ):

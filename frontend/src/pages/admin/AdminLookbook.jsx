@@ -220,12 +220,13 @@ const AdminLookbook = () => {
 
     setLoading(true);
     const data = new FormData();
-    data.append('title', formData.title);
-    data.append('sort_order', formData.sort_order);
+data.append('title', editData.title);
+data.append('sort_order', editData.sort_order);
+data.append('is_active', String(editData.is_active));
     
-    if (formData.imageFile) {
-      data.append('image', formData.imageFile);
-    }
+    if (editData.imageFile) {
+    data.append('image', editData.imageFile);
+}
 
     try {
       await api.post('/api/admin/lookbook', data, {

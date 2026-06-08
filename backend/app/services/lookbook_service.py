@@ -82,13 +82,14 @@ async def create_lookbook_item(title: str, sort_order: int, image: UploadFile) -
 # =========================================================
 async def update_lookbook_item(id: str, title: str, sort_order: int, image: Optional[UploadFile] = None):
     try:
-        if not ObjectId.is_valid(id):
-            raise HTTPException(status_code=400, detail="ID tidak valid")
-
-        existing_item = await lookbook_collection.find_one({"_id": ObjectId(id)})
+        # Tambahkan konversi ID
+        obj_id = ObjectId(id) 
+        
+        existing_item = await lookbook_collection.find_one({"_id": obj_id})
         if not existing_item:
             raise HTTPException(status_code=404, detail="Campaign tidak ditemukan")
 
+        # Pastikan sort_order ada
         old_order = int(existing_item.get("sort_order", 0))
         new_order = int(sort_order)
 
