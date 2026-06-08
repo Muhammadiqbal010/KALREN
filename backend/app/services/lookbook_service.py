@@ -82,51 +82,60 @@ async def create_lookbook_item(title: str, sort_order: int, image: UploadFile) -
 # =========================================================
 async def update_lookbook_item(id: str, title: str, sort_order: int, image: Optional[UploadFile] = None):
     try:
-        # Tambahkan konversi ID
-        obj_id = ObjectId(id) 
-        
+        # 1. Validasi ID
+        obj_id = ObjectId(id)
         existing_item = await lookbook_collection.find_one({"_id": obj_id})
         if not existing_item:
             raise HTTPException(status_code=404, detail="Campaign tidak ditemukan")
 
-        # Pastikan sort_order ada
+        # 2. Logic Shifting (Geser urutan)
         old_order = int(existing_item.get("sort_order", 0))
         new_order = int(sort_order)
 
-        # LOGIKA SHIFTING (Pergeseran)
         if old_order != new_order:
-            # 1. Geser item lain yang terdampak
             if new_order < old_order:
-                # Geser ke atas: item yang ada di antara new dan old ditambah 1
                 await lookbook_collection.update_many(
                     {"sort_order": {"$gte": new_order, "$lt": old_order}},
                     {"$inc": {"sort_order": 1}}
                 )
             else:
-                # Geser ke bawah: item yang ada di antara old dan new dikurang 1
                 await lookbook_collection.update_many(
                     {"sort_order": {"$gt": old_order, "$lte": new_order}},
                     {"$inc": {"sort_order": -1}}
                 )
 
+        # 3. Payload Dasar
         update_payload = {
             "title": title.strip(),
             "sort_order": new_order,
             "updated_at": datetime.now(timezone.utc)
         }
 
-        # Handle Image Update (sama seperti sebelumnya)
-        if image and image.filename:
-            # ... (logika upload cloudinary tetap sama)
-            pass
+        # 4. Handle Image (Hanya jika ada file baru)
+        if image and hasattr(image, 'filename') and image.filename:
+            file_bytes = await image.read()
+            upload_result = cloudinary.uploader.upload(file_bytes, folder="kalren_lookbooks")
+            new_image_url = upload_result.get("secure_url")
+            
+            if new_image_url:
+                update_payload["image_url"] = new_image_url
+                # Hapus yang lama
+                old_image_url = existing_item.get("image_url")
+                if old_image_url and "cloudinary.com" in old_image_url:
+                    public_id = extract_cloudinary_public_id(old_image_url)
+                    if public_id:
+                        cloudinary.uploader.destroy(public_id, invalidate=True)
 
-        await lookbook_collection.update_one({"_id": ObjectId(id)}, {"$set": update_payload})
+        # 5. Update
+        await lookbook_collection.update_one({"_id": obj_id}, {"$set": update_payload})
         return True
-
+        
     except Exception as e:
-        print(f"DEBUG ERROR: {e}") # Cek log ini di Vercel
+        # PENTING: Print ini agar muncul di Vercel Logs
+        print(f"CRITICAL ERROR IN UPDATE SERVICE: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+        
 # =========================================================
 # 🗑️ 4. PERMANENT DELETE CAMPAIGN (FIX PARAMETER DESTROY)
 # =========================================================
