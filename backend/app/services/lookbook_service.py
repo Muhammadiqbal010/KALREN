@@ -113,19 +113,21 @@ async def update_lookbook_item(id: str, title: str, sort_order: int, image: Opti
 
         # 4. Handle Image (Hanya jika ada file baru)
         if image and hasattr(image, 'filename') and image.filename:
-        file_bytes = await image.read()
-            upload_result = cloudinary.uploader.upload(file_bytes, folder="kalren_lookbooks")
-            new_image_url = upload_result.get("secure_url")
-            
-            if new_image_url:
-                update_payload["image_url"] = new_image_url
-                # Hapus yang lama
-                old_image_url = existing_item.get("image_url")
-                if old_image_url and "cloudinary.com" in old_image_url:
-                    public_id = extract_cloudinary_public_id(old_image_url)
-                    if public_id:
-                        cloudinary.uploader.destroy(public_id, invalidate=True)
-
+    file_bytes = await image.read()
+    upload_result = cloudinary.uploader.upload(file_bytes, folder="kalren_lookbooks")
+    new_image_url = upload_result.get("secure_url")
+    
+    if new_image_url:
+        update_payload["image_url"] = new_image_url
+        old_image_url = existing_item.get("image_url")
+        if old_image_url and "cloudinary.com" in old_image_url:
+            public_id = extract_cloudinary_public_id(old_image_url)
+            if public_id:
+                cloudinary.uploader.destroy(public_id, invalidate=True)
+else:
+    # JIKA TIDAK ADA GAMBAR, JANGAN LAKUKAN APA-APA (PAS)
+    pass
+    
         # 5. Update
         await lookbook_collection.update_one({"_id": obj_id}, {"$set": update_payload})
         return True
