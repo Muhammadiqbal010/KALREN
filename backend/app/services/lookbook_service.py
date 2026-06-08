@@ -2,6 +2,7 @@ import cloudinary.uploader
 from fastapi import HTTPException, UploadFile
 from bson import ObjectId
 from typing import Optional, List
+from datetime import datetime, timezone
 from app.database.collections import lookbook_collection # Kunci import collections aman sesuai environment lo Bal
 
 # =========================================================
@@ -9,21 +10,21 @@ from app.database.collections import lookbook_collection # Kunci import collecti
 # =========================================================
 def extract_cloudinary_public_id(url: str) -> Optional[str]:
     try:
-        if "upload/" in url:
-            right_part = url.split("upload/")[1]
-            sub_parts = right_part.split("/", 1)
+        if "upload/" not in url:
+            return None
             
-            # Singkirkan folder versioning otomatis (v1234567/) jika terdeteksi
-            if len(sub_parts) > 1 and sub_parts[0].startswith("v") and sub_parts[0][1:].isdigit():
-                path_with_ext = sub_parts[1]
-            else:
-                path_with_ext = right_part
-                
-            # Buang ekstensi format file (.jpg / .png / .webp)
-            return path_with_ext.rsplit(".", 1)[0]
-        else:
-            return url.split("/")[-1].split(".")[0]
-    except Exception:
+        # Pisahkan untuk mengambil bagian setelah /upload/
+        parts = url.split("upload/")[1]
+        
+        # Hapus versi (misal: v1717839201/)
+        if parts.startswith("v") and "/" in parts:
+            parts = parts.split("/", 1)[1]
+            
+        # Ambil nama file dan buang ekstensinya
+        public_id = parts.rsplit(".", 1)[0]
+        return public_id
+    except Exception as e:
+        print(f"Error ekstraksi ID: {e}")
         return None
 
 
