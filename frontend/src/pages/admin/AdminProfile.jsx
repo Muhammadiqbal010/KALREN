@@ -340,7 +340,7 @@ const AdminProfile = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeConfirm} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', duration: 0.4 }} className="relative w-full max-w-sm bg-[#0d0d0d] border border-white/10 rounded-2xl p-6 text-center shadow-2xl z-10 space-y-5" >
               <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-full mx-auto flex items-center justify-center">
-                <FiAlertCircle size={22} className="text-neutral-300" />
+                <FiAlertTriangle size={22} className="text-neutral-300" />
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-base font-black uppercase tracking-wider text-white">{confirmModal.title}</h3>
