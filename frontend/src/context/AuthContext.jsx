@@ -9,21 +9,31 @@ export const AuthProvider = ({ children }) => {
 
   const fetchCurrentUser = async () => {
     const token = localStorage.getItem('kalren_token');
+
     if (!token) {
       setLoading(false);
       return;
     }
 
     try {
-      const res = await api.get('/api/user/profile');
-      
+      const res = await api.get('/api/user/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
       if (res.data) {
-        setUser(res.data); // pastikan res.data punya field avatar
+        setUser({
+          ...res.data,
+          token
+        });
       }
     } catch (err) {
-      console.error("Gagal fetch session user dari DB Atlas:", err);
+      console.error('Gagal fetch session user dari DB Atlas:', err);
+
       localStorage.removeItem('kalren_token');
       localStorage.removeItem('kalren_role');
+
       setUser(null);
     } finally {
       setLoading(false);
@@ -31,12 +41,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('kalren_token');
-    if (token) {
-      fetchCurrentUser();
-    } else {
-      setLoading(false);
-    }
+    fetchCurrentUser();
   }, []);
 
   const logout = () => {
@@ -46,8 +51,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, fetchCurrentUser }}>
-      {children}
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        loading,
+        logout,
+        fetchCurrentUser
+      }}
+    >
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

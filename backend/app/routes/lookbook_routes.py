@@ -52,7 +52,7 @@ async def add_lookbook(
         await create_audit_log(
             current_user=current_user,
             action="ADD LOOKBOOK",
-            target=title.strip().toUpperCase(),
+            target=title.strip().upper(),
             detail="Berhasil menerbitkan campaign lookbook terbaru ke halaman galeri publik KALREN."
         )
         

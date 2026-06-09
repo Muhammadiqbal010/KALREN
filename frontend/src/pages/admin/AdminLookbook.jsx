@@ -212,26 +212,25 @@ const AdminLookbook = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.imageFile) {
-      triggerPopup('error', 'Wajib memilih minimal satu foto untuk meluncurkan campaign baru.');
-      return;
-    }
+  e.preventDefault();
+  if (!formData.imageFile) {
+    triggerPopup('error', 'Wajib memilih minimal satu foto.');
+    return;
+  }
 
-    setLoading(true);
-    const data = new FormData();
-data.append('title', editData.title);
-data.append('sort_order', editData.sort_order);
-data.append('is_active', String(editData.is_active));
-    
-    if (editData.imageFile) {
-    data.append('image', editData.imageFile);
-}
+  setLoading(true);
+  const data = new FormData();
+  data.append('title', formData.title);
+  data.append('sort_order', formData.sort_order);
+  data.append('image', formData.imageFile); // Pastikan key-nya 'image'
 
-    try {
-      await api.post('/api/admin/lookbook', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+  try {
+    await api.post('/api/admin/lookbook', data, {
+      headers: { 
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${user?.token}` // Tambahkan token jika di backend pakai Depends(get_current_user)
+      },
+    });
       
       await api.post('/api/admin/create-log', {
         username: user?.username || 'Unknown Admin',
@@ -271,55 +270,87 @@ data.append('is_active', String(editData.is_active));
   const data = new FormData();
   data.append('title', editData.title);
   data.append('sort_order', editData.sort_order);
-  // Tambahkan is_active
-  data.append('is_active', String(editData.is_active)); 
+  data.append('is_active', String(editData.is_active));
   
   if (editData.imageFile) {
     data.append('image', editData.imageFile);
   }
 
   try {
+    // 1. Kirim request update
     await api.put(`/api/admin/lookbook/${editData.id}`, data, {
       headers: { 
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${user?.token}` 
       },
     });
-    // ... sisa sukses ...
+
+    // 2. Logging
+    await api.post('/api/admin/create-log', {
+      username: user?.username || 'Unknown Admin',
+      role: user?.role || 'admin',
+      action: 'EDIT LOOKBOOK',
+      target: editData.title.trim().toUpperCase(),
+      detail: `Berhasil mengubah struktur data campaign`
+    }).catch(err => console.error("Log bypass:", err));
+
+    // 3. TANGANI SUKSES: Tutup modal, Refresh data, Munculkan popup
+    setEditModalOpen(false); // Tutup modal edit
+    await fetchLookbooks();   // Ambil data terbaru dari server
+    triggerPopup('success', 'Perubahan data campaign berhasil diperbarui.');
+    
   } catch (err) {
-    // Tambahkan log error di sini untuk melihat detailnya
-    console.error("Error Detail:", err.response?.data);
-    triggerPopup('error', err.response?.data?.detail || 'Gagal update.');
+    console.error("Update error:", err);
+    triggerPopup('error', 'Gagal memperbarui data perubahan campaign.');
   } finally {
     setLoading(false);
   }
 };
 
   const handleDeleteLookbook = (id, title) => {
-    triggerPopup(
-      'confirm',
-      `Apakah kamu yakin ingin menghapus campaign "${title.toUpperCase()}" secara permanen dari katalog lookbook?`,
-      async () => {
-        closePopup();
-        try {
-          await api.delete(`/api/admin/lookbook/${id}`);
+  triggerPopup(
+    'confirm',
+    `Apakah kamu yakin ingin menghapus campaign "${title.toUpperCase()}" secara permanen dari katalog lookbook?`,
+    async () => {
+      closePopup();
+      setLoading(true);
 
-          await api.post('/api/admin/create-log', {
-            username: user?.username || 'Unknown Admin',
-            role: user?.role || 'admin',
-            action: 'DELETE LOOKBOOK',
-            target: title.trim().toUpperCase(),
-            detail: `Menghapus aset gambar berkas campaign secara permanen dari sistem`
-          }).catch(err => console.error("Log bypass:", err));
+      try {
+        // 1. Hapus data lookbook
+        await api.delete(`/api/admin/lookbook/${id}`, {
+          headers: {
+            Authorization: `Bearer ${user?.token}`
+          }
+        });
 
-          triggerPopup('success', 'Campaign berhasil dihapus dari halaman lookbook.');
-          fetchLookbooks();
-        } catch (err) {
-          triggerPopup('error', 'Gagal mengeksekusi penghapusan item campaign.');
-        }
+        // 2. Simpan log aktivitas
+        await api.post('/api/admin/create-log', {
+          username: user?.username || 'Unknown Admin',
+          role: user?.role || 'admin',
+          action: 'DELETE LOOKBOOK',
+          target: title.trim().toUpperCase(),
+          detail: `Menghapus aset gambar berkas campaign secara permanen dari sistem`
+        }).catch(err => console.error('Log bypass:', err));
+
+        // 3. Refresh data agar urutan terbaru tampil
+        await fetchLookbooks();
+
+        triggerPopup(
+          'success',
+          'Campaign berhasil dihapus. Urutan lookbook telah disesuaikan otomatis.'
+        );
+      } catch (err) {
+        console.error('Delete error:', err);
+        triggerPopup(
+          'error',
+          'Gagal mengeksekusi penghapusan item campaign.'
+        );
+      } finally {
+        setLoading(false);
       }
-    );
-  };
+    }
+  );
+};
 
   return (
     <div className="space-y-6 md:space-y-10 font-['Inter'] bg-black text-white p-2 min-h-screen antialiased overflow-x-hidden">

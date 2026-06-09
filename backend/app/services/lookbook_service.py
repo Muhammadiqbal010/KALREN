@@ -146,30 +146,64 @@ async def update_lookbook_item(id: str, title: str, sort_order: int, image: Opti
 async def delete_lookbook_item(id: str):
     try:
         if not ObjectId.is_valid(id):
-            raise HTTPException(status_code=400, detail="ID Campaign tidak valid")
+            raise HTTPException(
+                status_code=400,
+                detail="ID Lookbook tidak valid"
+            )
 
-        # 1. Cari datanya dulu buat ngamanin link URL gambarnya Bal
-        existing_item = await lookbook_collection.find_one({"_id": ObjectId(id)})
+        # 1. Cari data yang akan dihapus
+        existing_item = await lookbook_collection.find_one(
+            {"_id": ObjectId(id)}
+        )
+
         if not existing_item:
-            raise HTTPException(status_code=404, detail="Campaign tidak ditemukan di database")
+            raise HTTPException(
+                status_code=404,
+                detail="Item lookbook tidak ditemukan"
+            )
 
-        # 2. Lakukan pemboman hancurkan file asli di server Cloudinary
+        deleted_sort_order = existing_item.get("sort_order", 0)
+
+        # 2. Hapus file di Cloudinary
         image_url = existing_item.get("image_url")
+
         if image_url and "cloudinary.com" in image_url:
             public_id = extract_cloudinary_public_id(image_url)
+
             if public_id:
                 try:
-                    # ✅ FIX MUTLAK: Lempar public_id yang bener, BUKAN image_url mentah!
-                    cloudinary.uploader.destroy(public_id, invalidate=True)
-                    print(f"🔥 Wipeout: Berhasil menghapus biner asset lookbook dari Cloudinary: {public_id}")
+                    cloudinary.uploader.destroy(
+                        public_id,
+                        invalidate=True
+                    )
+                    print(
+                        f"🔥 Berhasil menghapus asset Cloudinary: {public_id}"
+                    )
                 except Exception as ce:
-                    print(f"Warning: Gagal menghapus aset biner lookbook di Cloudinary: {ce}")
+                    print(
+                        f"Warning: Gagal menghapus asset Cloudinary: {ce}"
+                    )
 
-        # 3. Terakhir, lenyapkan datanya dari cluster MongoDB Atlas lo sampai bersih total
-        await lookbook_collection.delete_one({"_id": ObjectId(id)})
-        return True
-        
+        # 3. Hapus data dari MongoDB
+        await lookbook_collection.delete_one(
+            {"_id": ObjectId(id)}
+        )
+
+        # 4. Rapikan sort_order
+        await lookbook_collection.update_many(
+            {"sort_order": {"$gt": deleted_sort_order}},
+            {"$inc": {"sort_order": -1}}
+        )
+
+        return {
+            "message": "Item lookbook berhasil dihapus dan urutan diperbarui"
+        }
+
     except HTTPException:
         raise
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Gagal mengeksekusi hapus permanen lookbook: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Gagal menghapus item lookbook: {str(e)}"
+        )

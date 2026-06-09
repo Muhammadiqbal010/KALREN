@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import api from '../../api/axios';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor,  useSensor,  useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -162,36 +162,65 @@ const ImageCropperModal = ({ src, onCropComplete, onCancel, onErrorTrigger }) =>
 // 🎮 MINI COMPONENT: SORTABLE PHOTO CATALOG TILE
 // =========================================================
 const SortablePhoto = ({ id, url, index, onDelete, onRecrop }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    touchAction: 'none'
+  };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group aspect-[4/5] bg-[#111] rounded-xl overflow-hidden border border-white/5 shadow-md">
-      <div className="w-full h-full cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
-        <img src={url} className="w-full h-full object-cover pointer-events-none" alt={`preview ${index}`} />
-      </div>
-      
-      <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider select-none pointer-events-none">
-        {index === 0 ? "MAIN" : `IMG ${index + 1}`}
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative group aspect-[4/5] bg-[#111] rounded-xl overflow-hidden border border-white/5 shadow-md"
+    >
+      <div
+        className="w-full h-full cursor-grab active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <img
+          src={url}
+          alt={`preview ${index}`}
+          className="w-full h-full object-cover pointer-events-none"
+        />
       </div>
 
-      {/* Kontrol aksi otomatis muncul di mobile, dan via hover di desktop */}
-      <div className="absolute top-2 right-2 flex gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 z-30">
+      <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider select-none pointer-events-none">
+        {index === 0 ? 'MAIN' : `IMG ${index + 1}`}
+      </div>
+
+      <div className="absolute top-2 right-2 flex gap-1.5 opacity-100 z-30">
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRecrop(id, url); }}
-          className="bg-white hover:bg-zinc-200 text-black w-6 h-6 rounded-full flex items-center justify-center shadow-md transition cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRecrop(id, url);
+          }}
+          className="bg-white text-black w-7 h-7 rounded-full flex items-center justify-center shadow-md cursor-pointer"
           title="Crop Ulang"
         >
-          <FiCrop size={11} />
+          <FiCrop size={12} />
         </button>
+
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(id); }}
-          className="bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md transition cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(id);
+          }}
+          className="bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md cursor-pointer"
           title="Hapus"
         >
-          <FiTrash2 size={11} />
+          <FiTrash2 size={12} />
         </button>
       </div>
     </div>
@@ -223,8 +252,21 @@ const AdminProducts = () => {
   const [popup, setPopup] = useState({ isOpen: false, type: 'success', message: '', onConfirm: null });
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 8
+    }
+  }),
+
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 200,
+      tolerance: 5
+    }
+  }),
+
+  useSensor(KeyboardSensor)
+);
 
   const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
 
