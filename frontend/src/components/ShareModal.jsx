@@ -6,23 +6,30 @@ export const ShareModal = ({ isOpen, onClose, product }) => {
   const [copied, setCopied] = useState(false);
   const shareUrl = window.location.href; // Ambil URL saat modal dibuka
 
-  const handleCopy = () => {
-    // Cara paling stabil untuk copy di berbagai browser/konteks
-    const textArea = document.createElement("textarea");
-    textArea.value = shareUrl;
-    textArea.style.position = "fixed";
-    textArea.style.left = "-9999px";
-    document.body.appendChild(textArea);
-    textArea.select();
-    
+  const handleCopy = async (e) => {
+    e.stopPropagation(); // Biar nggak bentrok dengan event parent
     try {
-      document.execCommand('copy');
+      // Prioritas 1: Clipboard API (Modern & Aman)
+      await navigator.clipboard.writeText(shareUrl);
+      
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Copy gagal:', err);
+      // Prioritas 2: Fallback ke cara lama kalau gagal
+      console.error('Gagal copy otomatis, mencoba cara manual...');
+      const textArea = document.createElement("textarea");
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (fallbackErr) {
+        console.error('Copy gagal total:', fallbackErr);
+      }
+      document.body.removeChild(textArea);
     }
-    document.body.removeChild(textArea);
   };
 
   const socialLinks = [
