@@ -4,7 +4,7 @@ from typing import Optional
 
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from fastapi import HTTPException, Security
+from fastapi import Request, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # ========================= CONFIG =========================
@@ -69,25 +69,29 @@ def decode_token(token: str) -> Optional[dict]:
 
 
 # ========================= CURRENT USER =========================
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Security(security)
-) -> dict:
-    """Dependency untuk mendapatkan user saat ini dari token"""
-    token = credentials.credentials
+async def get_current_user(request: Request) -> dict:
+    # Coba cookie dulu
+    token = request.cookies.get("kalren_token")
+    
+    # Fallback ke Authorization header
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+    
+    if not token:
+        raise HTTPException(status_code=401, detail="Token tidak ditemukan")
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        
-        username: str = payload.get("sub")
-        role: str = payload.get("role")
-        token_type: str = payload.get("type")
+        username = payload.get("sub")
+        role = payload.get("role")
+        token_type = payload.get("type")
 
-        if username is None:
+        if not username:
             raise HTTPException(status_code=401, detail="Token tidak valid")
-
-        # Optional: cek apakah token tipe access
         if token_type != "access":
-            raise HTTPException(status_code=401, detail="Token refresh tidak boleh digunakan untuk akses")
+            raise HTTPException(status_code=401, detail="Token tidak valid untuk akses")
 
         return {"username": username, "role": role}
 

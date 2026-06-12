@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import api from '../api/axios';
-import { BlurImage } from '@/components/ui/BlurImage';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
+
+// Komponen Skeleton untuk transisi yang elegan
+const ProductSkeleton = () => (
+  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 md:gap-20">
+    {[...Array(6)].map((_, i) => (
+      <div key={i} className="animate-pulse">
+        <div className="aspect-[4/5] rounded-[1.2rem] md:rounded-[2.2rem] bg-neutral-200 mb-6" />
+        <div className="h-4 w-1/3 bg-neutral-200 rounded mx-auto mb-3" />
+        <div className="h-6 w-3/4 bg-neutral-200 rounded mx-auto" />
+      </div>
+    ))}
+  </div>
+);
 
 export const Collection = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +31,7 @@ export const Collection = () => {
         const category = searchParams.get('category') || 'SEMUA';
         const search = searchParams.get('search') || '';
 
-        const res = await api.get('/api/admin/list');
+        const res = await api.get('/api/admin/public/list');
         const allProducts = res.data || [];
 
         const activeProductsOnly = allProducts.filter((item) => item.is_active !== false);
@@ -64,7 +76,6 @@ export const Collection = () => {
   const selectedCategory = searchParams.get('category')?.toUpperCase() || 'SEMUA';
 
   return (
-    // WARNA TETAP SESUAI KODE ASLIMU (bg-navy)
     <div className="min-h-screen bg-navy text-white font-['Inter'] antialiased">
       <Navigation />
       
@@ -96,44 +107,40 @@ export const Collection = () => {
       <section className="bg-white py-12 md:py-24 min-h-screen">
         <div className="max-w-7xl mx-auto px-3 md:px-6">
           {loading ? (
-            <div className="text-center py-40 font-black text-navy text-xs md:text-sm tracking-[0.3em] animate-pulse">
-              LOADING ARCHIVE...
-            </div>
+            <ProductSkeleton />
           ) : (
-            // FIX LAYOUT: Grid responsif yang presisi untuk semua ukuran layar
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 md:gap-20">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 md:gap-20"
+            >
               {products.map((product) => {
                 const hasDiscount = product.is_discount === true && product.compare_price > product.price;
-                const productID = product.id || product._id;
                 const cover = product.image_urls?.[0] || "https://res.cloudinary.com/ddxplesul/image/upload/v1778695884/placeholder.jpg";
 
                 return (
-                  <Link key={productID} to={`/product/${productID}`} className="group block">
+                  <Link key={product.slug} to={`/product/${product.slug}`} className="group block">
                     <div className="rounded-[1.2rem] md:rounded-[2.2rem] bg-neutral-50 overflow-hidden relative shadow-xs">
-                      
                       {hasDiscount && (
                         <div className="absolute top-3 right-3 md:top-6 md:right-6 z-10 bg-red-600 text-white text-[7px] md:text-[9px] font-black uppercase tracking-widest px-2.5 py-1 md:px-4 md:py-1.5 rounded-full shadow-md">
                           Sale
                         </div>
                       )}
-
                       <div className="aspect-[4/5] overflow-hidden bg-zinc-100">
                         <img 
                           src={cover} 
                           alt={product.name} 
+                          loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                         />
                       </div>
-
                       <div className="p-3 md:p-8 text-center text-neutral-900">
                         <p className="text-[8px] md:text-[9px] font-bold tracking-[0.25em] md:tracking-[0.35em] text-neutral-400 uppercase mb-1 md:mb-2">
                           {product.series}
                         </p>
-                        
                         <h3 className="text-xs md:text-xl font-black uppercase mb-2 md:mb-4 h-10 md:h-14 flex items-center justify-center line-clamp-2 leading-tight">
                           {product.name}
                         </h3>
-                        
                         <div className="flex flex-col items-center justify-center min-h-[36px] md:min-h-[52px]">
                           {hasDiscount ? (
                             <div className="flex flex-col items-center gap-0.5">
@@ -155,7 +162,7 @@ export const Collection = () => {
                   </Link>
                 );
               })}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>

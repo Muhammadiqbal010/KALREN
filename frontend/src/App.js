@@ -11,6 +11,8 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import { ReactLenis } from '@studio-freight/react-lenis';
 
+import { ErrorPage } from './components/ErrorPage';
+
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -37,14 +39,24 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Protected Route
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('kalren_token');
+  const { user, loading } = useAuth();
 
-  return token ? children : <Navigate to="/khususorangdalam" replace />;
+  if (loading) {
+    return (
+      <div className="loader">
+        Loading Session...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/khususorangdalam" replace />;
+  }
+
+  return children;
 };
 
-// Main Router Component
 const AppRoutes = () => {
   const { loading } = useAuth();
 
@@ -63,10 +75,10 @@ const AppRoutes = () => {
       <AnimatePresence mode="wait">
         <Routes>
 
-          {/* PUBLIC ROUTES */}
+          {/* PUBLIC */}
           <Route path="/" element={<Home />} />
           <Route path="/collection" element={<Collection />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/lookbook" element={<Lookbook />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -85,8 +97,22 @@ const AppRoutes = () => {
             }
           />
 
-          {/* FALLBACK */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* ERROR PAGES */}
+          <Route
+            path="/forbidden"
+            element={<ErrorPage code={403} />}
+          />
+
+          <Route
+            path="/server-error"
+            element={<ErrorPage code={500} />}
+          />
+
+          {/* 404 HARUS PALING BAWAH */}
+          <Route
+            path="*"
+            element={<ErrorPage code={404} />}
+          />
 
         </Routes>
       </AnimatePresence>

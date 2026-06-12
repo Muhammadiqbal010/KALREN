@@ -88,4 +88,5 @@ async def get_current_user_service(username: str):
         "email": user.get("email"),
         "role": user.get("role", "owner"),
         "name": user.get("name"),
+        "avatar": user.get("avatar")
     }

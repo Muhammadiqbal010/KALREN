@@ -1,24 +1,56 @@
 import axios from 'axios';
 
-const getBaseURL = () => {
-  // Jika di lokal (npm start), pakai port 8000
-  // Jika di Vercel (npm run build), pakai URL production
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:8000'; 
-  }
-  return 'https://backend-kalren.vercel.app';
-};
-
 const api = axios.create({
-  baseURL: getBaseURL(),
-  withCredentials: true, // WAJIB untuk kirim token via cookie
+  baseURL:
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:8000'
+      : 'https://backend-kalren.vercel.app',
+  withCredentials: true,
 });
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('kalren_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+
+// request interceptor
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('kalren_token');
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// response interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const currentPath = window.location.pathname;
+
+    if (status === 401) {
+      localStorage.removeItem('kalren_token');
+
+      if (currentPath !== '/khususorangdalam') {
+        window.location.href = '/khususorangdalam';
+      }
+    }
+
+    if (status === 403) {
+      if (currentPath !== '/forbidden') {
+        window.location.href = '/forbidden';
+      }
+    }
+
+    if ([500, 502, 503, 504].includes(status)) {
+      if (currentPath !== '/server-error') {
+        window.location.href = '/server-error';
+      }
+    }
+
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export default api;

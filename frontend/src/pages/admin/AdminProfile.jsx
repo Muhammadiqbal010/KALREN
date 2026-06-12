@@ -7,14 +7,13 @@ import { FiCamera, FiLock, FiSave, FiUser, FiMail, FiEdit3, FiCheckCircle, FiAle
 import { getCroppedImg } from '../../utils/cropImage';
 
 // =========================================================
-// 🔔 MINI COMPONENT: CUSTOM NOTIFICATION POPUP
+// NOTIFICATION POPUP
 // =========================================================
 const NotificationPopup = ({ isOpen, type, message, onClose }) => {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[999999] p-4">
-      <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-[1.8rem] max-w-sm w-full space-y-5 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[#0a0a0a] border border-white/10 p-6 rounded-[1.8rem] max-w-sm w-full space-y-5 text-center shadow-2xl">
         <div className="flex flex-col items-center justify-center space-y-2">
           {type === 'success' ? (
             <FiCheckCircle className="text-emerald-400 text-3xl animate-pulse" />
@@ -24,11 +23,8 @@ const NotificationPopup = ({ isOpen, type, message, onClose }) => {
           <h3 className="text-xs font-black uppercase tracking-widest text-white">
             {type === 'success' ? 'BERHASIL' : 'PROSES GAGAL'}
           </h3>
-          <p className="text-gray-400 text-xs tracking-wide leading-relaxed font-medium">
-            {message}
-          </p>
+          <p className="text-gray-400 text-xs tracking-wide leading-relaxed font-medium">{message}</p>
         </div>
-
         <button
           type="button"
           onClick={onClose}
@@ -42,10 +38,10 @@ const NotificationPopup = ({ isOpen, type, message, onClose }) => {
 };
 
 // =========================================================
-// ⚡ MAIN CORE HUB COMPONENT
+// MAIN COMPONENT
 // =========================================================
 const AdminProfile = () => {
-  const { user, loading: authLoading, fetchCurrentUser } = useAuth();
+  const { user, loading: authLoading, fetchCurrentUser, setUser } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -63,15 +59,20 @@ const AdminProfile = () => {
   const [isCropping, setIsCropping] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
-  
-  // Custom State Notification Hub
   const [popup, setPopup] = useState({ isOpen: false, type: 'success', message: '' });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
+  // ── Sync form & avatar dari user context
   useEffect(() => {
     if (user) {
       setFormData(prev => ({ ...prev, name: user.name || '' }));
-      setPreviewUrl(user.avatar || '');
+      // Hanya set previewUrl kalau avatar berupa URL Cloudinary yang valid
+      console.log("User dari Context:", user);
+      if (user.avatar && user.avatar.startsWith('http')) {
+        setPreviewUrl(user.avatar);
+      } else {
+        setPreviewUrl('');
+      }
     }
   }, [user]);
 
@@ -99,7 +100,7 @@ const AdminProfile = () => {
       setPreviewUrl(URL.createObjectURL(blob));
       setIsCropping(false);
     } catch (e) {
-      setPopup({ isOpen: true, type: 'error', message: 'Gagal memotong area gambar.' });
+      showPopup('error', 'Gagal memotong area gambar.');
     }
   };
 
@@ -107,20 +108,26 @@ const AdminProfile = () => {
     setIsCropping(false);
     setAvatarFile(null);
     setCroppedBlob(null);
-    setPreviewUrl(user?.avatar || '');
+    // Kembalikan ke avatar dari user (Cloudinary URL)
+    if (user?.avatar && user.avatar.startsWith('http')) {
+      setPreviewUrl(user.avatar);
+    } else {
+      setPreviewUrl('');
+    }
   };
+
+  const showPopup = (type, message) => setPopup({ isOpen: true, type, message });
+  const closePopup = () => setPopup(prev => ({ ...prev, isOpen: false }));
 
   const showConfirm = (title, message, onConfirm) => {
     setConfirmModal({ isOpen: true, title, message, onConfirm });
   };
 
-  const closeConfirm = () => {
-    setConfirmModal(prev => ({ ...prev, isOpen: false }));
-  };
+  const closeConfirm = () => setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
-  // =====================================================
-  // EXECUTE ACTIONS (PENGALIHAN ALERT KE NOTIFICATION POPUP)
-  // =====================================================
+  // =========================================================
+  // SAVE PROFILE (nama + avatar)
+  // =========================================================
   const executeSaveProfile = async () => {
     setLoading(true);
     closeConfirm();
@@ -131,40 +138,59 @@ const AdminProfile = () => {
         form.append('avatar', croppedBlob, 'avatar.jpg');
       }
 
-      const response = await api.put('/api/user/profile', form, {
+      const response = await api.put('/api/auth/me', form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (response.data?.user?.avatar) {
-        setPreviewUrl(response.data.user.avatar);
-        const stored = localStorage.getItem('kalren_user');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          parsed.avatar = response.data.user.avatar;
-          parsed.name = response.data.user.name;
-          localStorage.setItem('kalren_user', JSON.stringify(parsed));
+      const updatedUser = response.data?.user;
+
+      if (updatedUser) {
+        // Update localStorage
+        localStorage.setItem('kalren_user', JSON.stringify(updatedUser));
+
+        // Update token baru kalau ada (karena backend generate ulang)
+        if (response.data?.access_token) {
+          localStorage.setItem('kalren_token', response.data.access_token);
         }
+
+        // Update previewUrl langsung dari Cloudinary URL
+        if (updatedUser.avatar && updatedUser.avatar.startsWith('http')) {
+          setPreviewUrl(updatedUser.avatar);
+        }
+
+        // Update user di context langsung tanpa harus refresh
+        setUser(updatedUser);
       }
 
-      await fetchCurrentUser();
       setAvatarFile(null);
       setCroppedBlob(null);
-      setPopup({ isOpen: true, type: 'success', message: 'Profil dan foto avatar baru berhasil diperbarui.' });
+      showPopup('success', 'Profil dan foto avatar baru berhasil diperbarui.');
     } catch (err) {
-      setPopup({ isOpen: true, type: 'error', message: err?.response?.data?.detail || 'Gagal menyimpan perubahan identitas profil.' });
+      showPopup('error', err?.response?.data?.detail || 'Gagal menyimpan perubahan identitas profil.');
     } finally {
       setLoading(false);
     }
   };
 
+  // =========================================================
+  // CHANGE PASSWORD
+  // =========================================================
   const executeChangePassword = async () => {
     setPasswordLoading(true);
     closeConfirm();
     try {
-      await api.put('/api/user/password', {
-        old_password: formData.currentPassword,
-        new_password: formData.newPassword
+      // Kirim sebagai FormData karena endpoint /me pakai Form()
+      const form = new FormData();
+      form.append('password', formData.newPassword);
+
+      const response = await api.put('/api/auth/me', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
+
+      // Update token baru
+      if (response.data?.access_token) {
+        localStorage.setItem('kalren_token', response.data.access_token);
+      }
 
       setFormData(prev => ({
         ...prev,
@@ -173,9 +199,9 @@ const AdminProfile = () => {
         confirmPassword: ''
       }));
 
-      setPopup({ isOpen: true, type: 'success', message: 'Password akses akun berhasil diubah.' });
+      showPopup('success', 'Password akses akun berhasil diubah.');
     } catch (err) {
-      setPopup({ isOpen: true, type: 'error', message: err?.response?.data?.detail || 'Gagal memperbarui password akun.' });
+      showPopup('error', err?.response?.data?.detail || 'Gagal memperbarui password akun.');
     } finally {
       setPasswordLoading(false);
     }
@@ -189,14 +215,17 @@ const AdminProfile = () => {
   const triggerChangePassword = (e) => {
     e.preventDefault();
     if (!formData.currentPassword || !formData.newPassword) {
-      return setPopup({ isOpen: true, type: 'error', message: 'Semua kolom input password wajib diisi.' });
+      return showPopup('error', 'Semua kolom input password wajib diisi.');
     }
     if (formData.newPassword !== formData.confirmPassword) {
-      return setPopup({ isOpen: true, type: 'error', message: 'Konfirmasi password baru tidak cocok.' });
+      return showPopup('error', 'Konfirmasi password baru tidak cocok.');
     }
     showConfirm('Ubah Password?', 'Sesi masuk akan diperbarui dengan kunci sandi yang baru.', executeChangePassword);
   };
 
+  // =========================================================
+  // LOADING / GUARD
+  // =========================================================
   if (authLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-zinc-500 font-mono text-xs tracking-widest px-4 text-center">
@@ -216,6 +245,9 @@ const AdminProfile = () => {
     );
   }
 
+  // =========================================================
+  // RENDER
+  // =========================================================
   return (
     <div className="space-y-6 md:space-y-10 font-['Inter'] antialiased text-white max-w-5xl mx-auto p-2 relative overflow-x-hidden">
 
@@ -227,7 +259,7 @@ const AdminProfile = () => {
         </p>
       </div>
 
-      {/* BILLBOARD */}
+      {/* BILLBOARD — tampilkan info user */}
       <div className="relative overflow-hidden bg-[#0a0a0a] border border-white/5 p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] flex flex-col sm:flex-row items-center gap-6 md:gap-8 shadow-2xl text-center sm:text-left">
         <div className="absolute top-0 right-0 p-10 pointer-events-none select-none opacity-[0.01] hidden md:block">
           <h2 className="text-[12vw] font-black tracking-tighter">ADMIN</h2>
@@ -235,7 +267,19 @@ const AdminProfile = () => {
 
         {/* Avatar */}
         <div className="relative group w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-2 border-white/10 bg-zinc-900 flex-shrink-0 shadow-xl transition-all duration-500">
-          <img src={previewUrl || '/default-avatar.png'} alt="Avatar" className="w-full h-full object-cover" />
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+              onError={(e) => { e.target.style.display = 'none'; }} // sembunyikan kalau gagal load
+            />
+          ) : (
+            // Placeholder inisial nama kalau belum ada avatar
+            <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-white text-3xl font-black uppercase">
+              {user?.name?.charAt(0) || user?.username?.charAt(0) || '?'}
+            </div>
+          )}
           <label htmlFor="avatar-upload-top" className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 sm:group-hover:opacity-100 flex flex-col items-center justify-center gap-1 cursor-pointer transition-opacity duration-300">
             <FiCamera className="text-xl" />
             <span className="text-[8px] font-black uppercase tracking-widest">Update</span>
@@ -251,7 +295,7 @@ const AdminProfile = () => {
               {user.role}
             </div>
           )}
-          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight truncate">{user?.name}</h2>
+          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight truncate">{user?.name || user?.username}</h2>
           {user?.email && (
             <p className="text-gray-500 text-xs font-mono flex items-center justify-center sm:justify-start gap-2 truncate">
               <FiMail className="text-gray-600 shrink-0" /> {user.email}
@@ -274,7 +318,11 @@ const AdminProfile = () => {
             <label className="block text-gray-500 text-[9px] md:text-[10px] uppercase font-bold tracking-widest mb-2">Name</label>
             <div className="relative">
               <FiUser className="absolute left-4 top-4 text-gray-600" />
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Update account name" required className="w-full bg-black border border-white/5 pl-12 pr-4 p-3.5 md:p-4 rounded-xl text-white text-xs md:text-sm outline-none focus:border-white/20 transition-all" />
+              <input
+                type="text" name="name" value={formData.name}
+                onChange={handleInputChange} placeholder="Update account name" required
+                className="w-full bg-black border border-white/5 pl-12 pr-4 p-3.5 md:p-4 rounded-xl text-white text-xs md:text-sm outline-none focus:border-white/20 transition-all"
+              />
             </div>
           </div>
 
@@ -285,12 +333,16 @@ const AdminProfile = () => {
               <FiCamera size={14} /> Upload Portrait Asset
             </label>
 
-            {/* Cropper Handler Section */}
+            {/* Cropper */}
             {isCropping && avatarFile && (
               <div className="mt-4 space-y-3 p-3 md:p-4 bg-black border border-white/5 rounded-xl">
                 <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-gray-500">Sesuaikan area potret:</p>
                 <div className="relative h-48 md:h-64 w-full bg-zinc-950 rounded-xl overflow-hidden border border-white/5">
-                  <Cropper image={URL.createObjectURL(avatarFile)} crop={crop} zoom={zoom} aspect={1} cropShape="round" onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={onCropComplete} />
+                  <Cropper
+                    image={URL.createObjectURL(avatarFile)}
+                    crop={crop} zoom={zoom} aspect={1} cropShape="round"
+                    onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={onCropComplete}
+                  />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
                   <button type="button" onClick={handleCancelCrop} className="px-3 py-1.5 bg-white/5 text-white rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-all cursor-pointer">
@@ -300,6 +352,14 @@ const AdminProfile = () => {
                     Potong Gambar
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Preview setelah crop */}
+            {croppedBlob && !isCropping && (
+              <div className="mt-3 flex items-center gap-3 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+                <img src={previewUrl} alt="Preview" className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider">Foto siap diupload</p>
               </div>
             )}
           </div>
@@ -318,12 +378,16 @@ const AdminProfile = () => {
 
           {[
             { name: 'currentPassword', label: 'Current Password' },
-            { name: 'newPassword',     label: 'New Password' },
+            { name: 'newPassword', label: 'New Password' },
             { name: 'confirmPassword', label: 'Confirm New Password' },
           ].map((field) => (
             <div key={field.name}>
               <label className="block text-gray-500 text-[9px] md:text-[10px] uppercase font-bold tracking-widest mb-2">{field.label}</label>
-              <input type="password" name={field.name} placeholder="••••••••••••" value={formData[field.name]} onChange={handleInputChange} className="w-full bg-black border border-white/5 p-3.5 md:p-4 rounded-xl text-white text-xs md:text-sm outline-none focus:border-white/20 transition-all font-mono" />
+              <input
+                type="password" name={field.name} placeholder="••••••••••••"
+                value={formData[field.name]} onChange={handleInputChange}
+                className="w-full bg-black border border-white/5 p-3.5 md:p-4 rounded-xl text-white text-xs md:text-sm outline-none focus:border-white/20 transition-all font-mono"
+              />
             </div>
           ))}
 
@@ -333,12 +397,17 @@ const AdminProfile = () => {
         </form>
       </div>
 
-      {/* CONFIRMATION DRAWER/MODAL INTERFACE */}
+      {/* CONFIRMATION MODAL */}
       <AnimatePresence>
         {confirmModal.isOpen && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeConfirm} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', duration: 0.4 }} className="relative w-full max-w-sm bg-[#0d0d0d] border border-white/10 rounded-2xl p-6 text-center shadow-2xl z-10 space-y-5" >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={closeConfirm} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', duration: 0.4 }}
+              className="relative w-full max-w-sm bg-[#0d0d0d] border border-white/10 rounded-2xl p-6 text-center shadow-2xl z-10 space-y-5"
+            >
               <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-full mx-auto flex items-center justify-center">
                 <FiAlertTriangle size={22} className="text-neutral-300" />
               </div>
@@ -359,9 +428,8 @@ const AdminProfile = () => {
         )}
       </AnimatePresence>
 
-      {/* GLOBAL POPUP CONFIGURATION NOTIFICATION */}
-      <NotificationPopup isOpen={popup.isOpen} type={popup.type} message={popup.message} onClose={() => setPopup(prev => ({ ...prev, isOpen: false }))} />
-
+      {/* NOTIFICATION POPUP */}
+      <NotificationPopup isOpen={popup.isOpen} type={popup.type} message={popup.message} onClose={closePopup} />
     </div>
   );
 };

@@ -2,94 +2,72 @@ import os
 import cloudinary.uploader
 
 from datetime import datetime
-from fastapi import (
-    APIRouter,
-    HTTPException,
-    status,
-    Depends,
-    UploadFile,
-    File,
-    Form
-)
-from fastapi.security import (
-    HTTPBearer,
-    HTTPAuthorizationCredentials
-)
+from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form, Request, Response
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.database.collections import user_collection
-
 from app.schemas.auth_schema import (
-    LoginRequest,
-    LoginResponse,
-    RefreshRequest,
-    RegisterRequest,
-    ResetPasswordRequest
+    LoginRequest, LoginResponse, RefreshRequest, RegisterRequest, ResetPasswordRequest
 )
-
 from app.services.auth_service import (
-    login_service,
-    refresh_token_service,
-    get_current_user_service
+    login_service, refresh_token_service, get_current_user_service
 )
-
 from app.core.security import (
-    decode_token,
-    get_password_hash,
-    create_tokens_bundle
+    decode_token, get_password_hash, create_tokens_bundle, get_current_user
 )
 
-# KUNCI UTAMA: Ubah prefix jadi /api/auth agar sirkuit routing KALREN terpisah bersih Bal!
-router = APIRouter(
-    prefix="/api/auth",
-    tags=["Authentication"]
-)
-
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 security = HTTPBearer()
 
-import os
+IS_PRODUCTION = os.getenv("ENV", "development") == "production"
+MASTER_KEY = os.getenv("MASTER_KEY", "ci i o kita keren")
 
-MASTER_KEY = os.getenv(
-    "MASTER_KEY",
-    "ci i o kita keren"
-)
 
 # =========================================================
 # LOGIN
 # =========================================================
-@router.post("/login", response_model=LoginResponse)
-async def login(payload: LoginRequest):
-    """Login user / admin"""
+@router.post("/login")
+async def login(response: Response, payload: LoginRequest):
     result = await login_service(payload)
-
     if not result:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email atau password salah!"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email atau password salah!")
 
-    return result
+    response.set_cookie(key="kalren_token", value=result["access_token"],
+                        httponly=True, secure=IS_PRODUCTION, samesite="lax", max_age=3600 * 24)
+    response.set_cookie(key="kalren_refresh", value=result["refresh_token"],
+                        httponly=True, secure=IS_PRODUCTION, samesite="lax", max_age=3600 * 24 * 7)
 
+    return {
+        "success": True,
+        "message": "Login berhasil",
+        "user": result["user"],
+        "access_token": result["access_token"]
+    }
+
+
+# =========================================================
+# LOGOUT
+# =========================================================
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("kalren_token")
+    response.delete_cookie("kalren_refresh")
+    return {"success": True, "message": "Logout berhasil"}
+
+
+# =========================================================
+# REGISTER
+# =========================================================
 @router.post("/register")
 async def register(payload: RegisterRequest):
-
     if payload.master_key != MASTER_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Kode Sakral salah."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Kode Sakral salah.")
 
     existing = await user_collection.find_one({
-        "$or": [
-            {"email": payload.email},
-            {"username": payload.username}
-        ]
+        "$or": [{"email": payload.email}, {"username": payload.username}]
     })
-
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email atau username sudah terdaftar."
-        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email atau username sudah terdaftar.")
 
     new_user = {
         "name": payload.name,
@@ -101,139 +79,103 @@ async def register(payload: RegisterRequest):
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
-
     await user_collection.insert_one(new_user)
+    return {"success": True, "message": f"Akun '{payload.username}' berhasil dibuat."}
 
-    return {
-        "success": True,
-        "message": f"Akun '{payload.username}' berhasil dibuat."
-    }
 
 # =========================================================
 # REFRESH TOKEN
 # =========================================================
-@router.post("/refresh", response_model=dict)
-async def refresh_token(payload: RefreshRequest):
-    """Memperbarui access token menggunakan refresh token"""
-    result = await refresh_token_service(payload)
+@router.post("/refresh")
+async def refresh(request: Request, response: Response):
+    refresh_token = request.cookies.get("kalren_refresh")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token tidak ditemukan")
 
+    class TokenData:
+        pass
+    data = TokenData()
+    data.refresh_token = refresh_token
+
+    result = await refresh_token_service(data)
     if not result:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token expired atau tidak valid."
-        )
+        raise HTTPException(status_code=401, detail="Refresh token tidak valid atau expired")
 
-    return result
+    response.set_cookie(key="kalren_token", value=result["access_token"],
+                        httponly=True, secure=IS_PRODUCTION, samesite="lax", max_age=3600 * 24)
+    response.set_cookie(key="kalren_refresh", value=result["refresh_token"],
+                        httponly=True, secure=IS_PRODUCTION, samesite="lax", max_age=3600 * 24 * 7)
+    return {"success": True, "message": "Token diperbarui"}
 
+
+# =========================================================
+# RESET PASSWORD
+# =========================================================
 @router.post("/reset-password")
 async def reset_password(payload: ResetPasswordRequest):
-
     if payload.master_key != MASTER_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Kode Sakral salah."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Kode Sakral salah.")
 
-    user = await user_collection.find_one({
-        "email": payload.email
-    })
-
+    user = await user_collection.find_one({"email": payload.email})
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Email tidak ditemukan."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Email tidak ditemukan.")
 
-    await user_collection.update_one(
-        {"email": payload.email},
-        {
-            "$set": {
-                "password": get_password_hash(
-                    payload.new_password
-                ),
-                "updated_at": datetime.utcnow()
-            }
-        }
+    new_hashed = get_password_hash(payload.new_password)
+
+    result = await user_collection.update_one(
+        {"_id": user["_id"]},  # pakai _id, bukan email — lebih aman & pasti
+        {"$set": {
+            "password": new_hashed,
+            "updated_at": datetime.utcnow()
+        }}
     )
 
-    return {
-        "success": True,
-        "message": "Password berhasil diperbarui."
-    }
+    # Verifikasi update benar-benar tersimpan
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=500,
+            detail="Gagal memperbarui password. Coba lagi."
+        )
+
+    print(f"[RESET PASSWORD] ✅ Password user '{user.get('email')}' berhasil diperbarui.")
+    return {"success": True, "message": "Password berhasil diperbarui."}
+
 
 # =========================================================
-# GET CURRENT USER
+# GET CURRENT USER — baca cookie + fallback Bearer header
 # =========================================================
 @router.get("/me")
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    """Mengambil data user berdasarkan token yang sedang aktif"""
-    token = credentials.credentials
-
-    payload = decode_token(token)
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token tidak valid atau telah expired"
-        )
-
-    username = payload.get("sub")
-    if not username:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token tidak valid"
-        )
-
-    user = await get_current_user_service(username)
+async def get_me(current_user: dict = Depends(get_current_user)):
+    user = await get_current_user_service(current_user["username"])
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User tidak ditemukan"
-        )
-
+        raise HTTPException(status_code=404, detail="User tidak ditemukan")
     return user
 
+
+# =========================================================
+# UPDATE PROFILE — baca cookie + fallback Bearer header
+# =========================================================
 @router.put("/me")
 async def update_profile(
-    name: str = Form(None),         # 🚀 SEKARANG KITA TANGKAP FIELD NAME KENDALI UTAMA!
+    name: str = Form(None),
     username: str = Form(None),
     password: str = Form(None),
     avatar: UploadFile = File(None),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    current_user: dict = Depends(get_current_user)
 ):
-    token = credentials.credentials
-    payload = decode_token(token)
-
-    if not payload:
-        raise HTTPException(status_code=401, detail="Token tidak valid")
-
-    current_username = payload.get("sub")
+    current_username = current_user["username"]
 
     user = await user_collection.find_one({
-        "$or": [
-            {"username": current_username},
-            {"email": current_username}
-        ]
+        "$or": [{"username": current_username}, {"email": current_username}]
     })
-
     if not user:
         raise HTTPException(status_code=404, detail="User tidak ditemukan")
 
-    # Inisialisasi data yang wajib ikut berubah
-    update_data = {
-        "updated_at": datetime.utcnow()
-    }
+    update_data = {"updated_at": datetime.utcnow()}
 
-    # ==================================================
-    # ✅ FIX 1: UPDATE FIELD NAME (Biar kesimpan ke MongoDB)
-    # ==================================================
     if name and name.strip():
         update_data["name"] = name.strip()
 
-    # ==================================================
-    # UPDATE USERNAME
-    # ==================================================
     if username and username.strip():
         username = username.strip()
         if username != user["username"]:
@@ -242,16 +184,11 @@ async def update_profile(
                 raise HTTPException(status_code=409, detail="Username sudah digunakan")
             update_data["username"] = username
 
-    # ==================================================
-    # UPDATE PASSWORD (Menampung ganti password sekaligus)
-    # ==================================================
     if password and password.strip():
         update_data["password"] = get_password_hash(password.strip())
+        print(f"[UPDATE PROFILE] 🔐 Password baru di-hash untuk user '{user.get('username')}'")
 
-    # ==================================================
-    # UPDATE AVATAR CLOUDINARY
-    # ==================================================
-    if avatar:
+    if avatar and avatar.filename:
         allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
         if avatar.content_type not in allowed_types:
             raise HTTPException(status_code=400, detail="Format gambar harus JPG, PNG atau WEBP")
@@ -267,17 +204,18 @@ async def update_profile(
         update_data["avatar"] = upload_result["secure_url"]
         update_data["avatar_public_id"] = upload_result["public_id"]
 
-    # ==================================================
-    # SAVE PERUBAHAN KE DATABASE ATLAS
-    # ==================================================
-    await user_collection.update_one(
+    # ✅ Satu kali update saja, langsung ambil dokumen terbaru
+    updated_user = await user_collection.find_one_and_update(
         {"_id": user["_id"]},
-        {"$set": update_data}
+        {"$set": update_data},
+        return_document=True
     )
 
-    updated_user = await user_collection.find_one({"_id": user["_id"]})
+    if not updated_user:
+        raise HTTPException(status_code=500, detail="Gagal memperbarui profil.")
 
-    # Generate token bundle baru biar session sinkron tanpa relogin
+    print(f"[UPDATE PROFILE] ✅ Profil '{updated_user.get('username')}' berhasil diperbarui.")
+
     tokens = create_tokens_bundle(
         username=updated_user["username"],
         role=updated_user.get("role", "owner")
@@ -285,7 +223,7 @@ async def update_profile(
 
     return {
         "success": True,
-        "message": "Profil berhasil diperbarui di MongoDB Atlas",
+        "message": "Profil berhasil diperbarui",
         "access_token": tokens["access_token"],
         "refresh_token": tokens["refresh_token"],
         "token_type": "bearer",

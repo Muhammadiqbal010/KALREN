@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { setUser, fetchCurrentUser } = useAuth();
 
   // State modal lupa password
   const [showReset, setShowReset] = useState(false);
@@ -16,22 +18,32 @@ const Login = () => {
   const [resetSuccess, setResetSuccess] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('kalren_token');
-    if (token) navigate('/admin');
-  }, [navigate]);
+// Login.jsx — useEffect cek token dari localStorage
+useEffect(() => {
+  const token = localStorage.getItem('kalren_token');
+  if (token) {
+    navigate('/admin');
+  }
+}, [navigate]);
 
+// Login.jsx — simpan token ke localStorage setelah login
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const res = await api.post('/api/auth/login', { email: username.trim(), password });
-      if (res.data?.access_token) {
-        localStorage.setItem('kalren_token', res.data.access_token);
-        if (res.data.refresh_token) localStorage.setItem('kalren_refresh_token', res.data.refresh_token);
+      const res = await api.post('/api/auth/login', {
+        email: username.trim(),
+        password
+      });
+
+      if (res.data?.success) {
+        // Simpan token & user ke localStorage
+        if (res.data.access_token) {
+          localStorage.setItem('kalren_token', res.data.access_token);
+        }
         if (res.data.user) {
           localStorage.setItem('kalren_user', JSON.stringify(res.data.user));
-          localStorage.setItem('kalren_role', res.data.user.role);
+          setUser(res.data.user); // ← langsung set user, tidak perlu tunggu fetch
         }
         navigate('/admin');
       }
