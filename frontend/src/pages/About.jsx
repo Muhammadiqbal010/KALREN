@@ -250,53 +250,60 @@ export const About = () => {
           5. VISI & MISI SECTION (1 COL MOBILE)
           ========================================== */}
       <section className="py-24 md:py-64 bg-[#F2F6FA] relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col gap-16 md:gap-32">
-            
-            {/* SUB-BLOCK VISI */}
-            {/* 🎯 CORE FIX: Ganti 'grid-cols-1' pas HP, baru split di 'md:grid-cols-12' */}
-            <div className="grid grid-cols-1 md:grid-cols-12 items-start md:items-center gap-4 md:gap-8">
-              <div className="md:col-span-4">
-                <h2 className="text-4xl md:text-7xl font-black text-navy uppercase tracking-tighter">
-                  Visi.
-                </h2>
-              </div>
-              <div className="md:col-span-8">
-                <p className="text-xl md:text-5xl font-light text-gray-700 leading-tight">
-                  Menjadi brand streetwear lokal{' '}
-                  <span className="font-bold text-navy">
-                    yang menghadirkan pakaian nyaman
-                  </span>{' '}
-                  dengan desain berkarakter untuk menemani gaya hidup anak muda.
+  <div className="max-w-6xl mx-auto px-6 relative z-10">
+    <div className="flex flex-col gap-16 md:gap-32">
+      
+      {/* SUB-BLOCK VISI */}
+      <div className="grid grid-cols-1 md:grid-cols-12 items-start md:items-center gap-4 md:gap-8">
+        <div className="md:col-span-4">
+          <h2 className="text-4xl md:text-7xl font-black text-navy uppercase tracking-tighter">
+            Visi.
+          </h2>
+        </div>
+        <div className="md:col-span-8">
+          <p className="text-xl md:text-4xl font-light text-gray-700 leading-tight">
+            Menjadi standar baru streetwear lokal yang memadukan{' '}
+            <span className="font-bold text-navy">
+              kenyamanan esensial dengan estetika premium
+            </span>, menciptakan pakaian yang relevan secara timeless bagi generasi muda.
+          </p>
+        </div>
+      </div>
+
+      {/* SUB-BLOCK MISI */}
+      <div className="grid grid-cols-1 md:grid-cols-12 items-start gap-4 md:gap-8">
+        <div className="md:col-span-4">
+          <h2 className="text-4xl md:text-7xl font-black text-navy uppercase tracking-tighter">
+            Misi.
+          </h2>
+        </div>
+        <div className="md:col-span-8 space-y-8 w-full">
+          {[
+            { title: "Material Excellence", desc: "Mengutamakan kualitas material pilihan yang memberikan kenyamanan tanpa kompromi, memastikan setiap jahitan dan bahan terasa superior saat digunakan." },
+            { title: "Refined Aesthetics", desc: "Menghadirkan desain yang minimalis, elegan, dan berkelas, dirancang khusus bagi mereka yang menghargai detail dalam setiap potongan pakaian." },
+            { title: "Effortless Style", desc: "Menyediakan koleksi yang mudah dipadupadankan, memberikan solusi berpakaian yang praktis namun tetap terlihat menonjol di segala situasi." },
+            { title: "Sustainable Quality", desc: "Menjaga standar produksi yang konsisten dan tahan lama, karena produk premium adalah investasi bagi gaya hidup penggunanya." }
+          ].map((misi, i) => (
+            <div key={i} className="flex items-start gap-4 md:gap-8 group">
+              <span className="text-xl md:text-4xl font-black text-navy/20 group-hover:text-navy transition-colors">
+                0{i + 1}
+              </span>
+              <div className="border-b border-gray-200 pb-4 md:pb-8 w-full group-hover:border-navy transition-colors">
+                <h4 className="text-lg md:text-2xl font-bold text-navy mb-1 uppercase tracking-wider">
+                  {misi.title}
+                </h4>
+                <p className="text-sm md:text-lg text-gray-600 font-light leading-relaxed">
+                  {misi.desc}
                 </p>
               </div>
             </div>
-
-            {/* SUB-BLOCK MISI */}
-            {/* 🎯 CORE FIX: Ganti 'grid-cols-1' pas HP, baru split di 'md:grid-cols-12' */}
-            <div className="grid grid-cols-1 md:grid-cols-12 items-start gap-4 md:gap-8">
-              <div className="md:col-span-4">
-                <h2 className="text-4xl md:text-7xl font-black text-navy uppercase tracking-tighter">
-                  Misi.
-                </h2>
-              </div>
-              <div className="md:col-span-8 space-y-6 md:space-y-8 w-full">
-                {(cmsData?.missions || defaultMissions).map((misi, i) => (
-                  <div key={i} className="flex items-start gap-4 md:gap-8 group">
-                    <span className="text-xl md:text-4xl font-black text-navy/20 group-hover:text-navy transition-colors">
-                      0{i + 1}
-                    </span>
-                    <p className="text-base md:text-2xl text-gray-600 font-light border-b border-gray-200 pb-2 md:pb-4 w-full group-hover:border-navy transition-colors">
-                      {misi}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
+          ))}
         </div>
-      </section>
+      </div>
+
+    </div>
+  </div>
+</section>
 
       {/* ==========================================
           6. THE JOURNEY TIMELINE (RESPONSIVE ALIGN)
