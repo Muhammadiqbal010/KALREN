@@ -1,5 +1,5 @@
 fastapi
-uvicorn[standard]
+uvicorn
 motor
 pymongo
 python-dotenv
@@ -14,3 +14,5 @@ requests
 pydantic[email]
 email-validator
 openpyxl
+reportlab
+pandas
