@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.services.master_service import get_master, save_master
+from app.schemas.master_schema import MasterDataSchema
 
 router = APIRouter(prefix="/api/master", tags=["Master"])
 
