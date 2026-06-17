@@ -24,16 +24,27 @@ import {
 const STORAGE_KEY = "inventory_master";
 
 /* ── persistence ── */
-function loadMaster() {
+async function loadMaster() {
   try {
-    const raw = localStorage.getItem("/api/master/");
-    if (raw) return JSON.parse(raw);
-  } catch { /* ignore */ }
-  return { kategoriData: DEFAULT_KATEGORI, satuan: DEFAULT_SATUAN };
+    const response = await fetch("/api/master/"); // Ambil data dari backend
+    if (!response.ok) throw new Error("Gagal ambil data");
+    return await response.json();
+  } catch (err) {
+    console.error("Gagal load, balik ke default:", err);
+    return { kategoriData: DEFAULT_KATEGORI, satuan: DEFAULT_SATUAN };
+  }
 }
 
-function saveMaster(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+async function saveMaster(data) {
+  try {
+    await fetch("/api/master/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  } catch (err) {
+    console.error("Gagal simpan ke backend:", err);
+  }
 }
 
 /* ── small reusable pieces ── */
