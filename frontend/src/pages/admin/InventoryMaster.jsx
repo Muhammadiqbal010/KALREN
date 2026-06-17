@@ -26,7 +26,7 @@ const STORAGE_KEY = "inventory_master";
 /* ── persistence ── */
 function loadMaster() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem("/api/master/");
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
   return { kategoriData: DEFAULT_KATEGORI, satuan: DEFAULT_SATUAN };

@@ -18,6 +18,7 @@ from app.routes.lookbook_routes import router as lookbook_router
 from app.routes.profile_routes import router as profile_router
 from app.routes.finance_routes import router as finance_router
 from app.routes.inventory_routes import router as inventory_router
+from app.routes.master_routes import router as master_route
 
 # Gunakan database dari mongodb.py
 from app.database.mongodb import database as db
@@ -167,6 +168,7 @@ app.include_router(analytics_router)
 app.include_router(lookbook_router)
 app.include_router(finance_router)
 app.include_router(inventory_router)
+app.include_router(master_route)
 
 # =========================================
 # ROOT & HEALTH
