@@ -47,9 +47,9 @@ function Toast({ message, onHide }) {
 }
 
 /* ─────────────────────────────────── Modal Tambah ── */
-function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
-  const defaultKat  = kategoriList[0] ?? "Kain";
-  const defaultSat  = satuan[0] ?? "pcs";
+function AddModal({ onClose, onSave, kategori, subKategori, satuan }) {
+  const defaultKat = kategori[0]?.id ?? "";
+  const defaultSat = satuan[0]?.id ?? "";
   const [form, setForm] = useState({
     nama_bahan: "", kategori: defaultKat, sub_item: "",
     stok: 0, satuan: defaultSat, min_stok: 3,
@@ -58,7 +58,9 @@ function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const setKategori = (v) => setForm(p => ({ ...p, kategori: v, sub_item: "" }));
-  const subItems = kategoriData[form.kategori] ?? [];
+  const subItems = subKategori.filter(
+    s => String(s.kategori_id) === String(form.kategori)
+);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
@@ -92,7 +94,15 @@ function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
               value={form.kategori}
               onChange={e => setKategori(e.target.value)}
             >
-              {kategoriList.map(k => <option key={k} value={k} className="bg-[#111]">{k}</option>)}
+              {kategori.map((k) => (
+  <option
+    key={k.id}
+    value={k.id}
+    className="bg-[#111]"
+  >
+    {k.nama}
+  </option>
+))}
             </select>
             <FiChevronDown size={11} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
           </div>
@@ -115,7 +125,14 @@ function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
                 }}
               >
                 <option value="__manual__" className="bg-[#111]">— Ketik manual —</option>
-                {subItems.map(s => <option key={s} value={s} className="bg-[#111]">{s}</option>)}
+                {subItems.map(s => (
+<option
+    key={s.id}
+    value={s.nama}
+>
+    {s.nama}
+</option>
+))}
               </select>
               <FiChevronDown size={11} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
             </div>
@@ -163,7 +180,14 @@ function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
               value={form.satuan}
               onChange={e => set("satuan", e.target.value)}
             >
-              {satuan.map(s => <option key={s} value={s} className="bg-[#111]">{s}</option>)}
+              {satuan.map(s=>(
+<option
+    key={s.id}
+    value={s.nama}
+>
+    {s.nama}
+</option>
+))}
             </select>
             <FiChevronDown size={11} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
           </div>
@@ -276,11 +300,12 @@ export default function Inventory() {
 
   // Master data — reload tiap kali modal tambah dibuka agar selalu sinkron dengan InventoryMaster
   const [master, setMaster] = useState({
-  kategoriData: {},
+  kategori: [],
+  subKategori: [],
   satuan: [],
 });
 
-  const kategoriList = Object.keys(master.kategoriData);
+  const kategoriList = master.kategori?.map((k) => k.nama) ?? [];
   const FILTERS = [
     { key: "all", label: "Semua" },
     ...kategoriList.map(k => ({ key: k, label: k })),
@@ -310,16 +335,19 @@ const loadMaster = async () => {
     const res = await api.get("/api/master");
 
     setMaster({
-      kategoriData: res.data.kategoriData || {},
-      satuan: res.data.satuan || [],
-    });
+  kategori: res.data.kategori || [],
+  subKategori: res.data.subKategori || [],
+  satuan: res.data.satuan || [],
+});
+
   } catch (err) {
     console.error("gagal mengambil master inventory", err);
 
     setMaster({
-      kategoriData: {},
-      satuan: [],
-    });
+  kategori: [],
+  subKategori: [],
+  satuan: [],
+});
   }
 };
     
@@ -572,7 +600,7 @@ const rows = useMemo(() => items.filter(i => {
 
       {/* Modals & Toast */}
       <AnimatePresence>
-        {showAdd      && <AddModal    onClose={() => setShowAdd(false)} onSave={addItem} kategoriList={kategoriList} kategoriData={master.kategoriData} satuan={master.satuan} />}
+        {showAdd      && <AddModal    onClose={() => setShowAdd(false)} onSave={addItem} kategori={master.kategori} subKategori={master.subKategori} satuan={master.satuan} />}
         {deleteTarget && <DeleteModal item={deleteTarget} onConfirm={confirmDelete} onClose={() => setDeleteTarget(null)} />}
         {toast        && <Toast message={toast} onHide={() => setToast(null)} />}
       </AnimatePresence>

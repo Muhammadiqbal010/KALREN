@@ -1,57 +1,73 @@
 /**
  * inventoryMaster.js
  *
- * File ini adalah satu-satunya sumber kebenaran (single source of truth)
- * untuk data master Inventory: kategori, sub-item per kategori, dan satuan.
+ * Master Inventory sekarang bersifat dinamis dan seluruh data
+ * berasal dari database melalui endpoint /api/master.
  *
- * CARA MENAMBAH DATA:
- *  - Kategori baru  → tambah key baru di KATEGORI_DATA
- *  - Sub-item baru  → tambah string di array kategori yang sesuai
- *  - Satuan baru    → tambah string di array SATUAN
+ * Struktur response backend:
  *
- * File ini di-import oleh:
- *  - Inventory.jsx        (tabel utama)
- *  - InventoryMaster.jsx  (halaman kelola master data)
+ * {
+ *   kategori: [
+ *     { id, nama }
+ *   ],
+ *   subKategori: [
+ *     { id, kategori_id, nama }
+ *   ],
+ *   satuan: [
+ *     { id, nama }
+ *   ]
+ * }
  *
- * Jika backend sudah siap, ganti export ini dengan API call dari
- * useMasterData() hook agar data tersimpan di database.
+ * File ini hanya menyediakan helper agar seluruh halaman
+ * menggunakan satu cara yang sama saat mengambil master data.
  */
 
-export const KATEGORI_DATA = {
-  Kain: [
-    "Boxy",
-    "Reguler",
-    "Cotton Combed 24s",
-    "Heavyweight 16s",
-    "Kain Rib",
-  ],
-  Aksesoris: [
-    "Hangtag",
-    "Label Baju / Woven",
-    "Ziplock / Packaging",
-    "Stiker Packing",
-  ],
-  Consumables: [
-    "Polyflex Foam",
-    "Polyflex Silicone",
-    "Film DTF",
-    "Tinta Sablon",
-    "Benang",
-  ],
+import api from "../services/api";
+
+/**
+ * Mengambil seluruh master data inventory
+ */
+export const getMasterData = async () => {
+  const { data } = await api.get("/api/master");
+
+  return {
+    kategori: data.kategori ?? [],
+    subKategori: data.subKategori ?? [],
+    satuan: data.satuan ?? [],
+  };
 };
 
-export const SATUAN = ["meter", "pcs", "roll", "liter", "cone", "Kg"];
+/**
+ * Mengambil daftar kategori
+ */
+export const getKategori = async () => {
+  const { kategori } = await getMasterData();
+  return kategori;
+};
 
-/* ─── derived helpers (jangan edit manual, otomatis dari atas) ─── */
+/**
+ * Mengambil daftar sub kategori
+ */
+export const getSubKategori = async () => {
+  const { subKategori } = await getMasterData();
+  return subKategori;
+};
 
-/** List nama kategori saja → ["Kain", "Aksesoris", "Consumables"] */
-export const KATEGORI_LIST = Object.keys(KATEGORI_DATA);
+/**
+ * Mengambil daftar satuan
+ */
+export const getSatuan = async () => {
+  const { satuan } = await getMasterData();
+  return satuan;
+};
 
-/** Sub-item dari satu kategori → ["Boxy", "Reguler", ...] */
-export const getSubItems = (kategori) => KATEGORI_DATA[kategori] ?? [];
+/**
+ * Filter sub kategori berdasarkan kategori_id
+ */
+export const getSubKategoriByKategori = async (kategoriId) => {
+  const { subKategori } = await getMasterData();
 
-/** Semua sub-item flat dengan label kategorinya (untuk search global) */
-export const ALL_ITEMS = Object.entries(KATEGORI_DATA).flatMap(
-  ([kategori, items]) => items.map((nama) => ({ nama, kategori }))
-);
-
+  return subKategori.filter(
+    (item) => String(item.kategori_id) === String(kategoriId)
+  );
+};
