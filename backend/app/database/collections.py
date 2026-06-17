@@ -10,3 +10,4 @@ site_settings_collection = database.site_settings
 cms_collection = database.cms_contents
 
 inventory_collection = database.inventory
+master_collection = database.master

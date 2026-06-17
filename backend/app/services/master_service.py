@@ -1,4 +1,4 @@
-from app.database import db
+from app.database.collections import master_collection
 
 async def get_master():
     data = await db.master.find_one({"_id": "config"})
