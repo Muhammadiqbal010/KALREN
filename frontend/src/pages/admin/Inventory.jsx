@@ -4,23 +4,6 @@ import {
   FiPlus, FiMinus, FiTrash2, FiX, FiSearch, FiTag, FiChevronDown,
 } from "react-icons/fi";
 import api from "../../api/axios";
-import {
-  KATEGORI_DATA as DEFAULT_KATEGORI_DATA,
-  SATUAN as DEFAULT_SATUAN,
-  KATEGORI_LIST as DEFAULT_KATEGORI_LIST,
-  getSubItems,
-} from  "../../config/inventoryMaster";
-
-/* ─────────────────────────────────── master data (dari localStorage atau default) ── */
-const STORAGE_KEY = "inventory_master";
-
-function loadMaster() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch { /* ignore */ }
-  return { kategoriData: DEFAULT_KATEGORI_DATA, satuan: DEFAULT_SATUAN };
-}
 
 /* ─────────────────────────────────── badge color (dynamic, cycled) ── */
 const BADGE_COLORS = [
@@ -73,6 +56,10 @@ function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
     ukuran: "", warna: "", keterangan: "",
   });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const openAddModal = async () => {
+  await loadMaster();
+  setShowAdd(true);
+};
 
   const setKategori = (v) => setForm(p => ({ ...p, kategori: v, sub_item: "" }));
   const subItems = kategoriData[form.kategori] ?? [];
@@ -292,8 +279,10 @@ export default function Inventory() {
   const [search,       setSearch]       = useState("");
 
   // Master data — reload tiap kali modal tambah dibuka agar selalu sinkron dengan InventoryMaster
-  const [master, setMaster] = useState(loadMaster);
-  useEffect(() => { if (showAdd) setMaster(loadMaster()); }, [showAdd]);
+  const [master, setMaster] = useState({
+  kategoriData: {},
+  satuan: [],
+});
 
   const kategoriList = Object.keys(master.kategoriData);
   const FILTERS = [
@@ -315,7 +304,28 @@ export default function Inventory() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+  load();
+  loadMaster();
+}, []);
+
+const loadMaster = async () => {
+  try {
+    const res = await api.get("/api/master");
+
+    setMaster({
+      kategoriData: res.data.kategoriData || {},
+      satuan: res.data.satuan || [],
+    });
+  } catch (err) {
+    console.error("gagal mengambil master inventory", err);
+
+    setMaster({
+      kategoriData: {},
+      satuan: [],
+    });
+  }
+};
 
   /* ── adjust stok ── */
   const adjust = async (item, delta) => {
@@ -395,7 +405,7 @@ const rows = useMemo(() => items.filter(i => {
           <p className="text-[10px] text-neutral-600 mt-1 uppercase tracking-wider">Kelola stok bahan baku produksi</p>
         </div>
         <button
-          onClick={() => setShowAdd(true)}
+          onClick={openAddModal}
           className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:opacity-85 transition-all cursor-pointer"
         >
           <FiPlus size={13} /> Bahan Baru
