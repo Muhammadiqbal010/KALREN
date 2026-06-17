@@ -22,7 +22,7 @@ cd "F:\KALREN\KALREN V2 WEB\KALREN\backend"
 
 # 3. Jalankan server 
 uvicorn app.main:app --reload
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+ 
 
 # 1. Masuk ke folder frontend KALREN
 cd "F:\KALREN\KALREN V2 WEB\KALREN\frontend"

@@ -147,6 +147,7 @@ const AdminProfile = () => {
       if (updatedUser) {
         // Update localStorage
         localStorage.setItem('kalren_user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
 
         // Update token baru kalau ada (karena backend generate ulang)
         if (response.data?.access_token) {

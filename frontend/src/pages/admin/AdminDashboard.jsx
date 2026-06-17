@@ -2,7 +2,11 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import SidebarAdmin from '../../components/SidebarAdmin';
 
-// Import Seluruh Sub-Halaman Admin
+import { useAuth } from '../../context/AuthContext';
+import Finance from './Finance';
+import Inventory from './Inventory';
+import InventoryMaster from "./InventoryMaster"; // 1. Import komponen Inventory
+
 import AdminDashboardHome from './AdminDashboardHome';
 import AdminProducts from './AdminProducts';
 import AdminCMS from './AdminCMS';
@@ -11,51 +15,57 @@ import AdminLookbook from './AdminLookbook';
 import AdminProfile from './AdminProfile';
 
 const AdminDashboard = () => {
-  const userRole = localStorage.getItem('kalren_role') || 'admin';
+  const { user } = useAuth();
 
   return (
-    /* h-screen dilepas agar tinggi halaman bebas mengikuti panjang konten */
     <div className="flex min-h-screen bg-black text-white w-full relative overflow-x-hidden">
-      
-      {/* 1. SIDEBAR HUB UTAMA (Fixed posisi melayang di kiri, lebar terkunci 64 / 256px) */}
+
+      {/* SIDEBAR */}
       <SidebarAdmin />
 
-      {/* 2. AREA KONTEN UTAMA
-          - flex-1 min-w-0: Otomatis menghitung sisa ruang monitor secara dinamis (tidak akan jebol ke kanan).
-          - md:ml-64: SOLUSI UTAMA! Memaksa bodi halaman memulai titik awalnya tepat di sebelah kanan setelah batas sidebar selesai.
-          - pt-24: Menjaga jarak aman atas agar tidak terselip di bawah Topbar Header transparan. */}
+      {/* AREA KONTEN UTAMA */}
       <main
-        className="
-          flex-1
-          min-w-0
-          md:ml-64
-          pt-24
-          p-4
-          sm:p-6
-          md:p-8
-          lg:p-12
-          text-white
-          font-['Inter']
-          antialiased
-          h-auto
-        "
+        className="flex-1 min-w-0 md:ml-64 pt-24 p-4 sm:p-6 md:p-8 lg:p-12 text-white font-['Inter'] antialiased h-auto"
       >
         <Routes>
-          {/* Default Redirect */}
           <Route index element={<AdminDashboardHome />} />
 
-          {/* Rute Navigasi Internal Panel */}
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="cms" element={<AdminCMS />} />
-          <Route path="lookbook" element={<AdminLookbook />} />
-          <Route path="profile" element={<AdminProfile />} />
+          {/* Akses Umum */}
+          <Route path="products"  element={<AdminProducts />} />
+          <Route path="cms"       element={<AdminCMS />} />
+          <Route path="lookbook"  element={<AdminLookbook />} />
+          <Route path="profile"   element={<AdminProfile />} />
+          <Route path="stats"     element={<AdminStats />} />
 
-          {/* Validasi Hak Akses Metriks Analytics */}
-          {userRole === 'owner' && (
-            <Route path="stats" element={<AdminStats />} />
-          )}
+          {/* Hanya Owner yang bisa akses Finance & Inventory */}
+          <Route
+            path="finance"
+            element={
+              user?.role === 'owner'
+                ? <Finance />
+                : <Navigate to="/admin" replace />
+            }
+          />
+          
+          <Route
+            path="inventory"
+            element={
+              user?.role === 'owner'
+                ? <Inventory />
+                : <Navigate to="/admin" replace />
+            }
+          />
 
-          {/* Fallback Rute Izin Ditolak */}
+          <Route
+  path="inventory/master"
+  element={
+    user?.role === 'owner'
+      ? <InventoryMaster />
+      : <Navigate to="/admin" replace />
+  }
+/>
+
+          {/* Fallback */}
           <Route
             path="*"
             element={
@@ -64,7 +74,7 @@ const AdminDashboard = () => {
                   Akses Ditolak
                 </h3>
                 <p className="text-zinc-500 text-xs md:text-sm max-w-xs leading-relaxed">
-                  Halaman tidak tersedia atau jenis akun kamu tidak memiliki izin akses untuk melihat data ini.
+                  Halaman tidak tersedia atau jenis akun kamu tidak memiliki izin akses.
                 </p>
               </div>
             }

@@ -26,8 +26,9 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
-// Admin
+// Admin Components
 import AdminDashboard from './pages/admin/AdminDashboard';
+import Finance from './pages/admin/Finance'; // <-- Import Finance sudah masuk
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -44,7 +45,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="loader">
+      <div className="loader text-white bg-black h-screen flex items-center justify-center font-mono text-xs uppercase tracking-widest">
         Loading Session...
       </div>
     );
@@ -58,11 +59,12 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AppRoutes = () => {
-  const { loading } = useAuth();
+  // ✅ FIX: 'user' sudah diekstrak di sini supaya bisa dipakai buat cek role
+  const { loading, user } = useAuth();
 
   if (loading) {
     return (
-      <div className="loader">
+      <div className="loader text-white bg-black h-screen flex items-center justify-center font-mono text-xs uppercase tracking-widest">
         Loading Session...
       </div>
     );
@@ -75,7 +77,7 @@ const AppRoutes = () => {
       <AnimatePresence mode="wait">
         <Routes>
 
-          {/* PUBLIC */}
+          {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<Home />} />
           <Route path="/collection" element={<Collection />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
@@ -83,11 +85,11 @@ const AppRoutes = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
 
-          {/* AUTH */}
+          {/* ================= AUTH ROUTES ================= */}
           <Route path="/khususorangdalam" element={<Login />} />
           <Route path="/maujadiorangdalam" element={<Register />} />
 
-          {/* ADMIN */}
+          {/* ================= ADMIN ROUTES ================= */}
           <Route
             path="/admin/*"
             element={
@@ -96,8 +98,8 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* ERROR PAGES */}
+  
+          {/* ================= ERROR PAGES ================= */}
           <Route
             path="/forbidden"
             element={<ErrorPage code={403} />}

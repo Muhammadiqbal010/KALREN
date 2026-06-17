@@ -8,3 +8,5 @@ site_settings_collection = database.site_settings
 
 # ✅ SINKRONISASI CENTRAL: Pointer sakral untuk manajemen konten CMS lu Bal
 cms_collection = database.cms_contents
+
+inventory_collection = database.inventory

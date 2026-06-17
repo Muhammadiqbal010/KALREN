@@ -1,19 +1,25 @@
-from fastapi import FastAPI, Request, Form, HTTPException, status, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 import time
 from datetime import datetime
 from pydantic import BaseModel
-from typing import List
+from bson import ObjectId
+from fastapi.encoders import jsonable_encoder
+import json
 
-# Import Routers bawaan lu Bal
+# Import Routers (Pastikan path-nya sesuai struktur folder baru lo)
 from app.routes.auth_routes import router as auth_router
 from app.routes.cms_routes import router as cms_router
 from app.routes.product_routes import router as product_router
 from app.routes.analytics_routes import router as analytics_router
 from app.routes.lookbook_routes import router as lookbook_router
 from app.routes.profile_routes import router as profile_router
+from app.routes.finance_routes import router as finance_router
+from app.routes.inventory_routes import router as inventory_router
+
+# Gunakan database dari mongodb.py
 from app.database.mongodb import database as db
 from app.core.security import get_current_user
 
@@ -36,35 +42,15 @@ app.add_middleware(
         "http://192.168.1.10:3000",
         "http://10.121.135.183:3000",
         "http://192.168.1.15:3000",
-        "http://10.99.37.183:3000", 
+        "http://10.99.37.183:3000",
+        "http://192.168.1.5:3000", 
+        "http://10.39.208.183:3000",
         "https://kalren.vercel.app" # domain prod kamu
     ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# =========================================
-# ROLE-BASED ACCESS CONTROL (RBAC) DEPENDENCY
-# =========================================
-class RoleChecker:
-    def __init__(self, allowed_roles: List[str]):
-        self.allowed_roles = allowed_roles
-
-    def __call__(self, current_user: dict = Depends(get_current_user)):
-        # Mengambil field 'role' dari dokumen user di MongoDB Atlas
-        user_role = current_user.get("role", "user") # default ke admin jika role tidak ada
-        if user_role not in self.allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="OTORITAS DITOLAK: AKUN ANDA TIDAK MEMILIKI AKSES KE MODUL INI."
-            )
-        return current_user
-
-# Gatekeeper yang siap lu pasang di router manapun Bal
-allow_admin_and_owner = RoleChecker(["admin", "owner"])
-allow_only_owner = RoleChecker(["owner"])
-
 
 # =========================================
 # SKEMA PYDANTIC UNTUK LOG AKTIVITAS ADMIN
@@ -83,14 +69,11 @@ class LogSchema(BaseModel):
 @app.post("/api/admin/create-log")
 async def create_log(log_data: LogSchema, current_user: dict = Depends(get_current_user)):
     try:
-        # 1. 🧠 DETEKSI STRUKTUR DATA CURRENT_USER (Aman untuk Objek maupun Dict)
+        # 1. DETEKSI STRUKTUR DATA CURRENT_USER
         if hasattr(current_user, "username"):
-            # Jika current_user adalah Objek Pydantic / Tortoise / SQLModel
             admin_name = current_user.username
             admin_role = getattr(current_user, "role", "admin")
         elif isinstance(current_user, dict):
-            # Jika current_user adalah Dictionary standar
-            # Kita cek juga apakah datanya bersarang di dalam key 'user'
             if "user" in current_user and isinstance(current_user["user"], dict):
                 admin_name = current_user["user"].get("username")
                 admin_role = current_user["user"].get("role", "admin")
@@ -98,20 +81,18 @@ async def create_log(log_data: LogSchema, current_user: dict = Depends(get_curre
                 admin_name = current_user.get("username") or current_user.get("name")
                 admin_role = current_user.get("role", "admin")
         else:
-            # Fallback terakhir jika tipe data tidak dikenal, kita ambil stringifikasinya
             admin_name = str(current_user)
             admin_role = "admin"
 
-        # Jika setelah dicek ternyata masih kosong, baru fallback ke data form log_data
         if not admin_name or admin_name == "None":
             admin_name = log_data.username or "Admin"
         if not admin_role or admin_role == "None":
             admin_role = log_data.role or "admin"
 
-        # 2. OVERRIDE DOKUMEN: Paksa sinkronisasi data otentik server
+        # 2. OVERRIDE DOKUMEN
         log_document = {
-            "username": admin_name,                  # Username asli lu (Bukan Unknown lagi)
-            "role": admin_role.lower().strip(),      # Role asli dari DB (owner/admin)
+            "username": admin_name,                  
+            "role": admin_role.lower().strip(),      
             "action": log_data.action.upper().strip(), 
             "target": log_data.target.upper().strip(), 
             "detail": log_data.detail.strip(),       
@@ -127,23 +108,16 @@ async def create_log(log_data: LogSchema, current_user: dict = Depends(get_curre
         raise HTTPException(status_code=500, detail=f"Gagal mencatat audit log: {str(e)}")
 
 # =========================================================
-# 📊 ENDPOINT INTERNAL LOG RIWAYAT AKTIVITAS (UPDATED & SECURED)
+# ENDPOINT INTERNAL LOG RIWAYAT AKTIVITAS
 # =========================================================
-
 @app.get("/api/admin/logs")
 async def get_all_logs(current_user: dict = Depends(get_current_user)):
     try:
-        # 1. Menarik maksimal 10 log aktivitas paling baru (Limit sesuai request lu, Bal)
-        # Menggunakan sort berdasarkan "_id" dengan nilai -1 (Khas BSON MongoDB untuk data terbaru)
         cursor = db.logs.find({}).sort("_id", -1).limit(10)
         logs = await cursor.to_list(length=10)
         
-        # 2. Iterasi pembersihan agar ramah data JSON di Frontend React
         for log in logs:
-            # Konversi objek _id khas BSON MongoDB menjadi string murni agar ramah JSON Frontend
             log["_id"] = str(log["_id"])
-            
-            # Bersihkan tipe data BSON datetime 'timestamp' agar tidak merusak parsing Axios di frontend
             if "timestamp" in log:
                 del log["timestamp"]
                 
@@ -175,14 +149,11 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
     start_time = time.time()
-    
     response = await call_next(request)
-    
     process_time = time.time() - start_time
     logging.info(
         f"{request.method} {request.url.path} - {response.status_code} - {process_time:.2f}s"
     )
-    
     return response
 
 # =========================================
@@ -194,7 +165,8 @@ app.include_router(cms_router)
 app.include_router(product_router)
 app.include_router(analytics_router)
 app.include_router(lookbook_router)
-
+app.include_router(finance_router)
+app.include_router(inventory_router)
 
 # =========================================
 # ROOT & HEALTH
@@ -216,9 +188,7 @@ from app.core.config import MONGODB_URL
 @app.get("/debug-uri")
 async def debug_uri():
     import os
-
     uri = os.getenv("MONGODB_URL", "")
-
     return {
         "starts_with": uri[:20],
         "length": len(uri)

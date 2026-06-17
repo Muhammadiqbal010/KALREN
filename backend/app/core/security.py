@@ -1,10 +1,10 @@
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from fastapi import Request, HTTPException, Security
+from fastapi import Request, HTTPException, Security, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # ========================= CONFIG =========================
@@ -99,3 +99,25 @@ async def get_current_user(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="Sesi telah berakhir, silakan login kembali")
     except jwt.JWTError:
         raise HTTPException(status_code=401, detail="Token tidak valid atau telah rusak")
+
+
+# =========================================
+# ROLE-BASED ACCESS CONTROL (RBAC) DEPENDENCY
+# =========================================
+class RoleChecker:
+    def __init__(self, allowed_roles: List[str]):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, current_user: dict = Depends(get_current_user)):
+        # Mengambil field 'role' dari current_user
+        user_role = current_user.get("role", "user") # default ke user jika role tidak ada
+        if user_role not in self.allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="OTORITAS DITOLAK: AKUN ANDA TIDAK MEMILIKI AKSES KE MODUL INI."
+            )
+        return current_user
+
+# Gatekeeper yang siap lu pasang di router manapun
+allow_admin_and_owner = RoleChecker(["admin", "owner"])
+allow_only_owner = RoleChecker(["owner"])

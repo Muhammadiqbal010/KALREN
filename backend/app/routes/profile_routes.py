@@ -74,7 +74,7 @@ async def update_profile(
     current_user: dict = Depends(get_current_user)
 ):
     user_db = await user_collection.find_one(
-        {"username": current_user.get("username")}
+        {"_id": ObjectId(current_user.get("id"))}
     )
 
     if not user_db:
