@@ -26,24 +26,20 @@ const STORAGE_KEY = "inventory_master";
 /* ── persistence ── */
 async function loadMaster() {
   try {
-    const response = await fetch("/api/master/"); // Ambil data dari backend
-    if (!response.ok) throw new Error("Gagal ambil data");
-    return await response.json();
+    const res = await api.get("/api/master/");
+    return res.data; // Harus mengembalikan objek { kategoriData, satuan }
   } catch (err) {
-    console.error("Gagal load, balik ke default:", err);
-    return { kategoriData: DEFAULT_KATEGORI, satuan: DEFAULT_SATUAN };
+    console.error("Gagal load dari server:", err);
+    return { kategoriData: {}, satuan: [] };
   }
 }
 
 async function saveMaster(data) {
   try {
-    await fetch("/api/master/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    await api.post("/api/master/", data);
   } catch (err) {
-    console.error("Gagal simpan ke backend:", err);
+    console.error("Gagal simpan ke server:", err);
+    throw err; // Lempar error agar toast tahu kalau gagal
   }
 }
 
@@ -53,11 +49,7 @@ function Tag({ label, onRemove, colorClass = "bg-white/5 border-white/10 text-wh
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-[10px] font-semibold ${colorClass}`}>
       {label}
       {onRemove && (
-        <button
-          onClick={onRemove}
-          className="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer ml-0.5"
-          aria-label={`Hapus ${label}`}
-        >
+        <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer ml-0.5">
           <FiX size={10} />
         </button>
       )}
@@ -67,24 +59,11 @@ function Tag({ label, onRemove, colorClass = "bg-white/5 border-white/10 text-wh
 
 function InlineAdd({ placeholder, onAdd }) {
   const [val, setVal] = useState("");
-  const commit = () => {
-    const v = val.trim();
-    if (v) { onAdd(v); setVal(""); }
-  };
+  const commit = () => { const v = val.trim(); if (v) { onAdd(v); setVal(""); } };
   return (
     <div className="flex items-center gap-2 mt-2">
-      <input
-        value={val}
-        onChange={e => setVal(e.target.value)}
-        onKeyDown={e => e.key === "Enter" && commit()}
-        placeholder={placeholder}
-        className="flex-1 bg-white/[.03] border border-white/[.06] rounded-lg px-3 py-1.5 text-[11px] text-white placeholder:text-neutral-600 outline-none focus:border-white/20 transition-all"
-      />
-      <button
-        onClick={commit}
-        disabled={!val.trim()}
-        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-black disabled:opacity-30 hover:opacity-85 transition-all cursor-pointer shrink-0"
-      >
+      <input value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => e.key === "Enter" && commit()} placeholder={placeholder} className="flex-1 bg-white/[.03] border border-white/[.06] rounded-lg px-3 py-1.5 text-[11px] text-white placeholder:text-neutral-600 outline-none focus:border-white/20 transition-all" />
+      <button onClick={commit} disabled={!val.trim()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-black disabled:opacity-30 hover:opacity-85 transition-all cursor-pointer shrink-0">
         <FiPlus size={12} />
       </button>
     </div>
@@ -154,29 +133,36 @@ const badgeColor = (idx) => BADGE_COLORS[idx % BADGE_COLORS.length];
 
 /* ══════════════════════════════════════════════════════════════ MAIN ══ */
 export default function InventoryMaster() {
-  const [master,         setMaster]         = useState(loadMaster);
-  const [expanded,       setExpanded]       = useState({});      // { [kategori]: bool }
-  const [confirmDelete,  setConfirmDelete]  = useState(null);    // kategori name
-  const [toast,          setToast]          = useState(null);
-  const [dirty,          setDirty]          = useState(false);
+  const [master, setMaster] = useState({ kategoriData: {}, satuan: [] });
+  const [expanded, setExpanded] = useState({});
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [dirty, setDirty] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const { kategoriData, satuan } = master;
+  useEffect(() => {
+    loadMaster().then(data => { setMaster(data); setLoading(false); });
+  }, []);
 
-  /* ── helpers ── */
   const update = (next) => { setMaster(next); setDirty(true); };
   const showToast = (msg) => setToast(msg);
 
-  const save = () => {
-    saveMaster(master);
-    setDirty(false);
-    showToast("Master data tersimpan!");
+  const save = async () => {
+    try {
+      await saveMaster(master);
+      setDirty(false);
+      showToast("Master data tersimpan di database!");
+    } catch {
+      showToast("Gagal menyimpan ke server!");
+    }
   };
+
+  const { kategoriData, satuan } = master;
 
   /* ── kategori ── */
   const addKategori = (nama) => {
     if (kategoriData[nama]) { showToast("Kategori sudah ada!"); return; }
     update({ ...master, kategoriData: { ...kategoriData, [nama]: [] } });
-    setExpanded(p => ({ ...p, [nama]: true }));
   };
 
   const deleteKategori = (nama) => {
@@ -184,35 +170,28 @@ export default function InventoryMaster() {
     delete next[nama];
     update({ ...master, kategoriData: next });
     setConfirmDelete(null);
-    showToast(`Kategori "${nama}" dihapus`);
   };
 
-  /* ── sub-item ── */
-  const addSubItem = (kategori, nama) => {
-    const list = kategoriData[kategori] ?? [];
-    if (list.includes(nama)) { showToast("Sub-item sudah ada!"); return; }
-    update({ ...master, kategoriData: { ...kategoriData, [kategori]: [...list, nama] } });
+  const addSubItem = (kat, nama) => {
+    const list = kategoriData[kat] ?? [];
+    if (list.includes(nama)) return;
+    update({ ...master, kategoriData: { ...kategoriData, [kat]: [...list, nama] } });
   };
 
-  const removeSubItem = (kategori, nama) => {
-    update({
-      ...master,
-      kategoriData: {
-        ...kategoriData,
-        [kategori]: kategoriData[kategori].filter(i => i !== nama),
-      },
-    });
+  const removeSubItem = (kat, nama) => {
+    update({ ...master, kategoriData: { ...kategoriData, [kat]: kategoriData[kat].filter(i => i !== nama) } });
   };
 
-  /* ── satuan ── */
   const addSatuan = (nama) => {
-    if (satuan.includes(nama)) { showToast("Satuan sudah ada!"); return; }
+    if (satuan.includes(nama)) return;
     update({ ...master, satuan: [...satuan, nama] });
   };
 
   const removeSatuan = (nama) => {
     update({ ...master, satuan: satuan.filter(s => s !== nama) });
   };
+
+  if (loading) return <div className="text-white text-center p-10">Memuat data...</div>;
 
   /* ── toggle expand ── */
   const toggle = (k) => setExpanded(p => ({ ...p, [k]: !p[k] }));
