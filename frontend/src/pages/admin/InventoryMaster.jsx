@@ -20,6 +20,7 @@ import {
   KATEGORI_DATA as DEFAULT_KATEGORI,
   SATUAN as DEFAULT_SATUAN,
 } from "../../config/inventoryMaster";
+import axios from "axios";
 
 const STORAGE_KEY = "inventory_master";
 
