@@ -13,3 +13,4 @@ pillow
 requests
 pydantic[email]
 email-validator
+openpyxl
