@@ -52,14 +52,10 @@ function AddModal({ onClose, onSave, kategoriList, kategoriData, satuan }) {
   const defaultSat  = satuan[0] ?? "pcs";
   const [form, setForm] = useState({
     nama_bahan: "", kategori: defaultKat, sub_item: "",
-    stok: 0, satuan: defaultSat, min_stok: 5,
+    stok: 0, satuan: defaultSat, min_stok: 3,
     ukuran: "", warna: "", keterangan: "",
   });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-  const openAddModal = async () => {
-  await loadMaster();
-  setShowAdd(true);
-};
 
   const setKategori = (v) => setForm(p => ({ ...p, kategori: v, sub_item: "" }));
   const subItems = kategoriData[form.kategori] ?? [];
@@ -325,6 +321,11 @@ const loadMaster = async () => {
       satuan: [],
     });
   }
+};
+    
+    const openAddModal = async () => {
+  await loadMaster();
+  setShowAdd(true);
 };
 
   /* ── adjust stok ── */
